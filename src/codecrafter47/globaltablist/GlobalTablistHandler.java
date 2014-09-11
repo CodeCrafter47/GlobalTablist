@@ -68,9 +68,14 @@ public class GlobalTablistHandler extends TabList {
             Item item = new Item();
             item.setUsername(getPlayer().getName());
             item.setUuid(getPlayer().getUniqueId());
+            String text = player.getDisplayName();
+            if (text.length() > 16) {
+                text = text.substring(0, 16);
+            }
+            item.setDisplayName(text);
             item.setPing(i);
-            for (ProxiedPlayer player : plugin.getProxy().getPlayers()) {
-                player.unsafe().sendPacket(pli);
+            for (ProxiedPlayer p : plugin.getProxy().getPlayers()) {
+                p.unsafe().sendPacket(pli);
             }
         }
     }
@@ -101,7 +106,7 @@ public class GlobalTablistHandler extends TabList {
                     PlayerListItem pli = new PlayerListItem();
                     pli.setAction(PlayerListItem.Action.ADD_PLAYER);
                     Item item = new Item();
-                    item.setUsername(text);
+                    item.setDisplayName(text);
                     item.setPing(0);
                     pli.setItems(new Item[]{item});
                     getPlayer().unsafe().sendPacket(pli);
@@ -110,12 +115,12 @@ public class GlobalTablistHandler extends TabList {
         }
 
         // send players
-        for (ProxiedPlayer player : plugin.getProxy().getPlayers()) {
-            sendPlayerSlot(player, getPlayer());
-            if (player == getPlayer()) {
+        for (ProxiedPlayer p : plugin.getProxy().getPlayers()) {
+            sendPlayerSlot(p, getPlayer());
+            if (p == getPlayer()) {
                 continue;
             }
-            sendPlayerSlot(getPlayer(), player);
+            sendPlayerSlot(getPlayer(), p);
         }
 
         // store ping
@@ -137,7 +142,7 @@ public class GlobalTablistHandler extends TabList {
                     PlayerListItem pli = new PlayerListItem();
                     pli.setAction(PlayerListItem.Action.REMOVE_PLAYER);
                     Item item = new Item();
-                    item.setUsername(text);
+                    item.setDisplayName(text);
                     item.setPing(0);
                     pli.setItems(new Item[]{item});
                     getPlayer().unsafe().sendPacket(pli);
@@ -146,8 +151,8 @@ public class GlobalTablistHandler extends TabList {
         }
 
         // remove player
-        for (ProxiedPlayer player : plugin.getProxy().getPlayers()) {
-            removePlayerSlot(getPlayer(), player);
+        for (ProxiedPlayer p : plugin.getProxy().getPlayers()) {
+            removePlayerSlot(getPlayer(), p);
         }
     }
 
@@ -170,18 +175,19 @@ public class GlobalTablistHandler extends TabList {
     protected void sendPlayerSlot(ProxiedPlayer player, ProxiedPlayer receiver) {
         String text = player.getDisplayName();
 
-        if (!is18Client() && text.length() > 16) {
+        if (!is18Client(receiver) && text.length() > 16) {
             text = text.substring(0, 16);
         }
 
         PlayerListItem pli = new PlayerListItem();
         pli.setAction(PlayerListItem.Action.ADD_PLAYER);
         Item item = new Item();
-        item.setUsername(is18Client(receiver) ? player.getName() : text);
         item.setPing(player.getPing());
-        if (is18Client(receiver)) {
-            item.setGamemode(((UserConnection) player).getGamemode());
+        if (!is18Client(receiver)) {
             item.setDisplayName(text);
+        } else {
+            item.setUsername(player.getName());
+            item.setGamemode(((UserConnection) player).getGamemode());
             item.setUuid(player.getUniqueId());
             item.setProperties(new String[0][0]);
             if (!isCracked(receiver)) {
@@ -205,9 +211,15 @@ public class GlobalTablistHandler extends TabList {
         PlayerListItem pli = new PlayerListItem();
         pli.setAction(PlayerListItem.Action.REMOVE_PLAYER);
         Item item = new Item();
-        item.setUsername(player.getName());
         if (is18Client(receiver)) {
+            item.setUsername(player.getName());
             item.setUuid(player.getUniqueId());
+        } else {
+            String text = player.getDisplayName();
+            if (text.length() > 16) {
+                text = text.substring(0, 16);
+            }
+            item.setDisplayName(text);
         }
         pli.setItems(new Item[]{item});
         receiver.unsafe().sendPacket(pli);
