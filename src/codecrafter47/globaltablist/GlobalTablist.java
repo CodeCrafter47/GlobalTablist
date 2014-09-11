@@ -62,6 +62,16 @@ public class GlobalTablist extends Plugin {
      */
     @Override
     public void onEnable() {
+        // check whether bungee version is supported
+        try {
+            Class.forName("net.md_5.bungee.api.Title");
+        } catch (ClassNotFoundException ex) {
+            getLogger().severe(
+                    "This plugin does not support your BungeeCord version");
+            getLogger().severe("Please use build #996 or above");
+            return;
+        }
+
         INSTANCE = this;
         try {
             config = new MainConfig(this);
