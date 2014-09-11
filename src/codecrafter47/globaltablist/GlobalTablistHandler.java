@@ -124,6 +124,28 @@ public class GlobalTablistHandler extends TabList {
 
     @Override
     public void onDisconnect() {
+        // remove custom slots on 1.7 clients
+        if (plugin.getConfig().showHeaderFooter) {
+            if (!is18Client()) {
+                for (String text : plugin.getConfig().custom_lines_top) {
+                    text = text.replaceAll("\\{player\\}", getPlayer().
+                            getDisplayName());
+                    text = ChatColor.translateAlternateColorCodes('&', text);
+                    if (text.length() > 16) {
+                        text = text.substring(0, 16);
+                    }
+                    PlayerListItem pli = new PlayerListItem();
+                    pli.setAction(PlayerListItem.Action.REMOVE_PLAYER);
+                    Item item = new Item();
+                    item.setUsername(text);
+                    item.setPing(0);
+                    pli.setItems(new Item[]{item});
+                    getPlayer().unsafe().sendPacket(pli);
+                }
+            }
+        }
+
+        // remove player
         for (ProxiedPlayer player : plugin.getProxy().getPlayers()) {
             removePlayerSlot(getPlayer(), player);
         }
