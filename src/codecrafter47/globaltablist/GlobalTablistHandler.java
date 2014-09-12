@@ -89,12 +89,14 @@ public class GlobalTablistHandler extends TabList {
                         translateAlternateColorCodes('&', plugin.
                                 getConfig().header.
                                 replaceAll("\\{player\\}", getPlayer().
-                                        getDisplayName()))),
+                                        getDisplayName()).replaceAll(
+                                        "\\{newline\\}", "\n"))),
                         TextComponent.fromLegacyText(ChatColor.
                                 translateAlternateColorCodes('&',
                                         plugin.getConfig().footer.
                                         replaceAll("\\{player\\}", getPlayer().
-                                                getDisplayName()))));
+                                                getDisplayName()).replaceAll(
+                                                "\\{newline\\}", "\n"))));
             } else {
                 for (String text : plugin.getConfig().custom_lines_top) {
                     text = text.replaceAll("\\{player\\}", getPlayer().

@@ -40,19 +40,24 @@ public class MainConfig extends Config {
     public boolean showHeaderFooter = true;
 
     @Comments({
-        "This text will be shown above the tablist on 1.8 clients"
+        "This text will be shown above the tablist on 1.8 clients",
+        " - {player} will be replaced with the name of the player",
+        " - {newline} will insert a linebreak"
     })
     public String header = "&6Welcome &f{player}";
 
     @Comments({
-        "This text will be shown below the tablist on 1.8 clients"
+        "This text will be shown below the tablist on 1.8 clients",
+        " - {player} will be replaced with the name of the player",
+        " - {newline} will insert a linebreak"
     })
     public String footer = "&4minecraft.net";
 
     @Comments({
         "On 1.7 clients this replaces the missing header and footer.",
         "You can add some custom text slots at the top of the player list",
-        "Every text has to be unique, is not allowed to match a player name and can be max. 16 characters long"
+        "Every text has to be unique, is not allowed to match a player name and can be max. 16 characters long",
+        " - {player} will be replaced with the name of the player"
     })
     public List<String> custom_lines_top = Arrays.asList(new String[]{
         "&6Welcome", "&6{player}", "&6to our server", "&1 ", "&2 ", "&3 "});
