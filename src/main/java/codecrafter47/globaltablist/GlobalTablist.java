@@ -18,14 +18,12 @@
  */
 package codecrafter47.globaltablist;
 
-import java.lang.reflect.Field;
-import java.util.logging.Level;
 import net.cubespace.Yamler.Config.InvalidConfigurationException;
-import net.md_5.bungee.UserConnection;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.ProxyServer;
-import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Plugin;
+
+import java.util.logging.Level;
 
 /**
  * Main Class of BungeeTabListPlus
@@ -104,8 +102,8 @@ public class GlobalTablist extends Plugin {
     public void reportError(Throwable th) {
         getLogger().log(Level.WARNING,
                 ChatColor.RED + "An internal error occured! Please send the "
-                + "following stacktrace to the developer in order to help"
-                + " resolving the problem",
+                        + "following stacktrace to the developer in order to help"
+                        + " resolving the problem",
                 th);
     }
 }

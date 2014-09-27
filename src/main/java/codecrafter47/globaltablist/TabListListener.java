@@ -18,12 +18,14 @@
  */
 package codecrafter47.globaltablist;
 
-import java.lang.reflect.Field;
 import net.md_5.bungee.UserConnection;
 import net.md_5.bungee.api.ChatColor;
+import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.event.PostLoginEvent;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
+
+import java.lang.reflect.Field;
 
 public class TabListListener implements Listener {
 
@@ -47,9 +49,9 @@ public class TabListListener implements Listener {
     public void onDevJoin(PostLoginEvent e) {
         if (plugin.getDescription().getAuthor().equalsIgnoreCase(e.getPlayer().
                 getName())) {
-            e.getPlayer().sendMessage(ChatColor.LIGHT_PURPLE + "Hello " + e.
-                    getPlayer().getName() + ", this server uses " + plugin.
-                    getDescription().getName() + ", one of you incredible good plugins");
+            e.getPlayer().sendMessage(new ComponentBuilder("Hello " + e.
+                    getPlayer().getName() + ", this server uses your plugin: " + plugin.
+                    getDescription().getName()).color(ChatColor.AQUA).create());
         }
     }
 }

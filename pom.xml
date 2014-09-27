@@ -15,9 +15,9 @@
             <url>https://oss.sonatype.org/content/repositories/snapshots</url>
         </repository>
         <repository>
-        <id>cindyscats-repo</id>
-        <url>http://basket.cindyscats.com/content/repositories/thirdparty/</url>
-    </repository>
+            <id>cindyscats-repo</id>
+            <url>http://basket.cindyscats.com/content/repositories/thirdparty/</url>
+        </repository>
     </repositories>
 
     <build>

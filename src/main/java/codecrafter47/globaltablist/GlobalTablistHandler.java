@@ -19,8 +19,6 @@
 package codecrafter47.globaltablist;
 
 import net.md_5.bungee.UserConnection;
-import net.md_5.bungee.api.ChatColor;
-import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.connection.LoginResult;
 import net.md_5.bungee.protocol.packet.PlayerListItem;
@@ -28,14 +26,13 @@ import net.md_5.bungee.protocol.packet.PlayerListItem.Item;
 import net.md_5.bungee.tab.TabList;
 
 /**
- *
  * @author Florian Stober
  */
 public class GlobalTablistHandler extends TabList {
 
     private final GlobalTablist plugin;
 
-    int lastPing = 0;
+    private int lastPing = 0;
 
     public GlobalTablist getPlugin() {
         return plugin;
@@ -115,8 +112,8 @@ public class GlobalTablistHandler extends TabList {
         return player.getPendingConnection().getVersion() >= 47;
     }
 
-    protected boolean isCracked(ProxiedPlayer player) {
-        return !player.getPendingConnection().isOnlineMode();
+    protected boolean isPremium(ProxiedPlayer player) {
+        return player.getPendingConnection().isOnlineMode();
     }
 
     protected void sendPlayerSlot(ProxiedPlayer player, ProxiedPlayer receiver) {
@@ -137,14 +134,14 @@ public class GlobalTablistHandler extends TabList {
             item.setGamemode(((UserConnection) player).getGamemode());
             item.setUuid(player.getUniqueId());
             item.setProperties(new String[0][0]);
-            if (!isCracked(receiver)) {
+            if (isPremium(receiver)) {
                 LoginResult loginResult = ((UserConnection) player).
                         getPendingConnection().getLoginProfile();
                 if (loginResult != null) {
                     for (LoginResult.Property s : loginResult.getProperties()) {
                         if (s.getName().equals("textures")) {
                             item.setProperties(new String[][]{{"textures", s.
-                                getValue(), s.getSignature()}});
+                                    getValue(), s.getSignature()}});
                         }
                     }
                 }
