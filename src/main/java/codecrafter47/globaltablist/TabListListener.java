@@ -38,11 +38,12 @@ public class TabListListener implements Listener {
     @EventHandler
     public void onPlayerJoin(PostLoginEvent e) throws NoSuchFieldException,
             IllegalArgumentException, IllegalAccessException {
-        Class cplayer = UserConnection.class;
-        Field tabListHandler = cplayer.getDeclaredField("tabListHandler");
-        tabListHandler.setAccessible(true);
-        tabListHandler.set(e.getPlayer(),
-                new GlobalTablistHandler(e.getPlayer(), plugin));
+        if (plugin.getConfig().useGlobalTablist) {
+            Class cplayer = UserConnection.class;
+            Field tabListHandler = cplayer.getDeclaredField("tabListHandler");
+            tabListHandler.setAccessible(true);
+            tabListHandler.set(e.getPlayer(), new GlobalTablistHandler(e.getPlayer(), plugin));
+        }
     }
 
     @EventHandler
