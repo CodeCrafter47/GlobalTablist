@@ -27,23 +27,22 @@ import net.md_5.bungee.event.EventHandler;
 import net.md_5.bungee.protocol.packet.PlayerListItem;
 
 /**
- *
  * @author Florian Stober
  */
 
 
-public class CustomizationHandler implements Listener{
-    GlobalTablist plugin;
+public class CustomizationHandler implements Listener {
+    private final GlobalTablist plugin;
 
     public CustomizationHandler(GlobalTablist plugin) {
         this.plugin = plugin;
         plugin.getProxy().getPluginManager().registerListener(plugin, this);
     }
-    
+
     @EventHandler
-    public void onLogin(PostLoginEvent event){
+    public void onLogin(PostLoginEvent event) {
         ProxiedPlayer player = event.getPlayer();
-        
+
         if (plugin.getConfig().showHeaderFooter) {
             if (player.getPendingConnection().getVersion() >= 47) {
                 player.setTabHeader(TextComponent.fromLegacyText(ChatColor.
@@ -51,12 +50,12 @@ public class CustomizationHandler implements Listener{
                                 getConfig().header.
                                 replaceAll("\\{player\\}", player.
                                         getDisplayName()).replaceAll(
-                                        "\\{newline\\}", "\n"))),
+                                "\\{newline\\}", "\n"))),
                         TextComponent.fromLegacyText(ChatColor.
                                 translateAlternateColorCodes('&',
                                         plugin.getConfig().footer.
-                                        replaceAll("\\{player\\}", player.
-                                                getDisplayName()).replaceAll(
+                                                replaceAll("\\{player\\}", player.
+                                                        getDisplayName()).replaceAll(
                                                 "\\{newline\\}", "\n"))));
             } else {
                 for (String text : plugin.getConfig().custom_lines_top) {
