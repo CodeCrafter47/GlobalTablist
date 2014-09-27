@@ -1,0 +1,3 @@
+Manifest-Version: 1.0
+Class-Path: yamler-bungee-2.2.3.jar
+
