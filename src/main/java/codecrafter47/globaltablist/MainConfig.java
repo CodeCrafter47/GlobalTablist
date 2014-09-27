@@ -63,10 +63,9 @@ public class MainConfig extends Config {
     @Comments({
             "On 1.7 clients this replaces the missing header and footer.",
             "You can add some custom text slots at the top of the player list",
-            "Every text has to be unique, is not allowed to match a player name and can be max. 16 characters long",
             " - {player} will be replaced with the name of the player"
     })
-    public List<String> custom_lines_top = Arrays.asList("&6Welcome", "&6{player}", "&6to our server", "&1 ", "&2 ", "&3 ");
+    public List<String> custom_lines_top = Arrays.asList("&6Welcome", "&6{player}", "&6to our server", "", "", "");
 
     public MainConfig(Plugin plugin) throws InvalidConfigurationException {
         CONFIG_FILE = new File("plugins" + File.separator + plugin.

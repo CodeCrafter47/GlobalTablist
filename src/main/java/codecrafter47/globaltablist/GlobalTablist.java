@@ -18,6 +18,7 @@
  */
 package codecrafter47.globaltablist;
 
+import lombok.Getter;
 import net.cubespace.Yamler.Config.InvalidConfigurationException;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.ProxyServer;
@@ -35,23 +36,14 @@ public class GlobalTablist extends Plugin {
     /**
      * Holds an INSTANCE of itself if the plugin is enabled
      */
+    @Getter()
     private static GlobalTablist INSTANCE;
     private CustomizationHandler customizationHandler;
 
     /**
-     * Static getter for the current instance of the plugin
-     *
-     * @return the current instance of the plugin, null if the plugin is
-     * disabled
-     */
-    public static GlobalTablist getInstance() {
-        return INSTANCE;
-
-    }
-
-    /**
      * provides access to the configuration
      */
+    @Getter
     private MainConfig config;
 
     private final TabListListener listener = new TabListListener(this);
@@ -81,7 +73,7 @@ public class GlobalTablist extends Plugin {
             return;
         }
 
-        customizationHandler = new CustomizationHandler(this);
+        if(config.showHeaderFooter)customizationHandler = new CustomizationHandler(this);
 
         ProxyServer.getInstance().getPluginManager().registerListener(this,
                 listener);
@@ -93,10 +85,6 @@ public class GlobalTablist extends Plugin {
     @Override
     public void onDisable() {
         // let the proxy do this
-    }
-
-    public MainConfig getConfig() {
-        return config;
     }
 
     public void reportError(Throwable th) {
