@@ -59,20 +59,22 @@ public class GlobalTablistHandler extends TabList {
 
     @Override
     public void onPingChange(int i) {
-        if (lastPing - i > 50 || lastPing - i < 50) {
-            PlayerListItem pli = new PlayerListItem();
-            pli.setAction(PlayerListItem.Action.UPDATE_LATENCY);
-            Item item = new Item();
-            item.setUsername(getPlayer().getName());
-            item.setUuid(getPlayer().getUniqueId());
-            String text = player.getDisplayName();
-            if (text.length() > 16) {
-                text = text.substring(0, 16);
-            }
-            item.setDisplayName(text);
-            item.setPing(i);
-            for (ProxiedPlayer p : plugin.getProxy().getPlayers()) {
-                p.unsafe().sendPacket(pli);
+        if(plugin.getConfig().updatePing) {
+            if (lastPing - i > 50 || lastPing - i < 50) {
+                PlayerListItem pli = new PlayerListItem();
+                pli.setAction(PlayerListItem.Action.UPDATE_LATENCY);
+                Item item = new Item();
+                item.setUsername(getPlayer().getName());
+                item.setUuid(getPlayer().getUniqueId());
+                String text = player.getDisplayName();
+                if (text.length() > 16) {
+                    text = text.substring(0, 16);
+                }
+                item.setDisplayName(text);
+                item.setPing(i);
+                for (ProxiedPlayer p : plugin.getProxy().getPlayers()) {
+                    p.unsafe().sendPacket(pli);
+                }
             }
         }
     }
