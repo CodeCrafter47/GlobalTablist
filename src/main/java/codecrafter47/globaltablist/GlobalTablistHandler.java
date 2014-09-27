@@ -34,10 +34,6 @@ public class GlobalTablistHandler extends TabList {
 
     private int lastPing = 0;
 
-    public GlobalTablist getPlugin() {
-        return plugin;
-    }
-
     public GlobalTablistHandler(ProxiedPlayer player, GlobalTablist plugin) {
         super(player);
         this.plugin = plugin;
@@ -100,14 +96,6 @@ public class GlobalTablistHandler extends TabList {
         for (ProxiedPlayer p : plugin.getProxy().getPlayers()) {
             removePlayerSlot(getPlayer(), p);
         }
-    }
-
-    protected boolean is18Client() {
-        return getPlayer().getPendingConnection().getVersion() >= 47;
-    }
-
-    protected boolean isCracked() {
-        return !getPlayer().getPendingConnection().isOnlineMode();
     }
 
     protected boolean is18Client(ProxiedPlayer player) {
