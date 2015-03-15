@@ -55,7 +55,7 @@ public class CustomizationHandler implements Listener {
         customText.add(new Updateable() {
             @Override
             protected void update(ProxiedPlayer player) {
-                if(player.getPendingConnection().getVersion() < ProtocolConstants.MINECRAFT_SNAPSHOT)return;
+                if(player.getPendingConnection().getVersion() < 47)return;
                 player.setTabHeader(TextComponent.fromLegacyText(ChatColor.
                                 translateAlternateColorCodes('&', replaceVariables(plugin.getConfig().header, player))),
                         TextComponent.fromLegacyText(ChatColor.
@@ -119,7 +119,7 @@ public class CustomizationHandler implements Listener {
     }
 
     private void sendCustomization(ProxiedPlayer player) {
-        if (player.getPendingConnection().getVersion() < ProtocolConstants.MINECRAFT_SNAPSHOT) {
+        if (player.getPendingConnection().getVersion() < 47) {
             for (int i = 0; i < plugin.getConfig().custom_lines_top.size() && i < fakePlayers.length; i++) {
                 PlayerListItem pli = new PlayerListItem();
                 pli.setAction(PlayerListItem.Action.ADD_PLAYER);
