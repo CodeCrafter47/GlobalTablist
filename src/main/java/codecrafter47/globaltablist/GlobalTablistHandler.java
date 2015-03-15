@@ -50,7 +50,31 @@ public class GlobalTablistHandler extends TabList {
 
     @Override
     public void onUpdate(PlayerListItem pli) {
-        // It's a global tablist - we don't pass packets from the server
+        // We need to forward gamemode updates to avoid glitches
+        if (is18Client(getPlayer())) {
+            if (pli.getAction() == PlayerListItem.Action.ADD_PLAYER) {
+                for (Item item : pli.getItems()) {
+                    if (item.getUuid().equals(getPlayer().getUniqueId())) {
+                        ((UserConnection) player).setGamemode(item.getGamemode());
+                        for (ProxiedPlayer p : plugin.getProxy().getPlayers()) {
+                            sendPlayerSlot(p, getPlayer());
+                        }
+                    }
+                }
+            } else if (pli.getAction() == PlayerListItem.Action.UPDATE_GAMEMODE) {
+                for (Item item : pli.getItems()) {
+                    if (item.getUuid().equals(getPlayer().getUniqueId())) {
+                        ((UserConnection) player).setGamemode(item.getGamemode());
+                        PlayerListItem packet = new PlayerListItem();
+                        packet.setAction(PlayerListItem.Action.UPDATE_GAMEMODE);
+                        packet.setItems(new Item[]{item});
+                        for (ProxiedPlayer p : plugin.getProxy().getPlayers()) {
+                            p.unsafe().sendPacket(packet);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     @Override
