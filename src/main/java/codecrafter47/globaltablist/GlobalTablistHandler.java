@@ -79,7 +79,7 @@ public class GlobalTablistHandler extends TabList {
 
     @Override
     public void onPingChange(int i) {
-        if(plugin.getConfig().updatePing) {
+        if (plugin.getConfig().updatePing) {
             if (lastPing - i > 50 || lastPing - i < 50) {
                 PlayerListItem pli = new PlayerListItem();
                 pli.setAction(PlayerListItem.Action.UPDATE_LATENCY);
@@ -126,10 +126,6 @@ public class GlobalTablistHandler extends TabList {
         return player.getPendingConnection().getVersion() >= 47;
     }
 
-    protected boolean isPremium(ProxiedPlayer player) {
-        return player.getPendingConnection().isOnlineMode();
-    }
-
     protected void sendPlayerSlot(ProxiedPlayer player, ProxiedPlayer receiver) {
         String text = player.getDisplayName();
 
@@ -148,15 +144,13 @@ public class GlobalTablistHandler extends TabList {
             item.setGamemode(((UserConnection) player).getGamemode());
             item.setUuid(player.getUniqueId());
             item.setProperties(new String[0][0]);
-            if (isPremium(receiver)) {
-                LoginResult loginResult = ((UserConnection) player).
-                        getPendingConnection().getLoginProfile();
-                if (loginResult != null) {
-                    for (LoginResult.Property s : loginResult.getProperties()) {
-                        if (s.getName().equals("textures")) {
-                            item.setProperties(new String[][]{{"textures", s.
-                                    getValue(), s.getSignature()}});
-                        }
+            LoginResult loginResult = ((UserConnection) player).
+                    getPendingConnection().getLoginProfile();
+            if (loginResult != null) {
+                for (LoginResult.Property s : loginResult.getProperties()) {
+                    if (s.getName().equals("textures")) {
+                        item.setProperties(new String[][]{{"textures", s.
+                                getValue(), s.getSignature()}});
                     }
                 }
             }
