@@ -147,12 +147,18 @@ public class GlobalTablistHandler extends TabList {
             LoginResult loginResult = ((UserConnection) player).
                     getPendingConnection().getLoginProfile();
             if (loginResult != null) {
-                for (LoginResult.Property s : loginResult.getProperties()) {
-                    if (s.getName().equals("textures")) {
-                        item.setProperties(new String[][]{{"textures", s.
-                                getValue(), s.getSignature()}});
-                    }
+                String[][] props = new String[loginResult.getProperties().length][];
+                for (int i = 0; i < props.length; i++) {
+                    props[i] = new String[]
+                            {
+                                    loginResult.getProperties()[i].getName(),
+                                    loginResult.getProperties()[i].getValue(),
+                                    loginResult.getProperties()[i].getSignature()
+                            };
                 }
+                item.setProperties(props);
+            } else {
+                item.setProperties(new String[0][0]);
             }
         }
         pli.setItems(new Item[]{item});
