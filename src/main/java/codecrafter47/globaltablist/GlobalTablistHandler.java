@@ -18,9 +18,7 @@
  */
 package codecrafter47.globaltablist;
 
-import net.md_5.bungee.UserConnection;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
-import net.md_5.bungee.connection.LoginResult;
 import net.md_5.bungee.protocol.packet.PlayerListItem;
 import net.md_5.bungee.protocol.packet.PlayerListItem.Item;
 import net.md_5.bungee.tab.TabList;
@@ -30,9 +28,9 @@ import net.md_5.bungee.tab.TabList;
  */
 public class GlobalTablistHandler extends TabList {
 
-    private final GlobalTablist plugin;
+    protected final GlobalTablist plugin;
 
-    private int lastPing = 0;
+    protected int lastPing = 0;
 
     public GlobalTablistHandler(ProxiedPlayer player, GlobalTablist plugin) {
         super(player);
@@ -50,31 +48,7 @@ public class GlobalTablistHandler extends TabList {
 
     @Override
     public void onUpdate(PlayerListItem pli) {
-        // We need to forward gamemode updates to avoid glitches
-        if (is18Client(getPlayer())) {
-            if (pli.getAction() == PlayerListItem.Action.ADD_PLAYER) {
-                for (Item item : pli.getItems()) {
-                    if (item.getUuid().equals(getPlayer().getUniqueId())) {
-                        ((UserConnection) player).setGamemode(item.getGamemode());
-                        for (ProxiedPlayer p : plugin.getProxy().getPlayers()) {
-                            sendPlayerSlot(p, getPlayer());
-                        }
-                    }
-                }
-            } else if (pli.getAction() == PlayerListItem.Action.UPDATE_GAMEMODE) {
-                for (Item item : pli.getItems()) {
-                    if (item.getUuid().equals(getPlayer().getUniqueId())) {
-                        ((UserConnection) player).setGamemode(item.getGamemode());
-                        PlayerListItem packet = new PlayerListItem();
-                        packet.setAction(PlayerListItem.Action.UPDATE_GAMEMODE);
-                        packet.setItems(new Item[]{item});
-                        for (ProxiedPlayer p : plugin.getProxy().getPlayers()) {
-                            p.unsafe().sendPacket(packet);
-                        }
-                    }
-                }
-            }
-        }
+        // global tablist - nothing to do
     }
 
     @Override
@@ -85,7 +59,6 @@ public class GlobalTablistHandler extends TabList {
                 pli.setAction(PlayerListItem.Action.UPDATE_LATENCY);
                 Item item = new Item();
                 item.setUsername(getPlayer().getName());
-                item.setUuid(getPlayer().getUniqueId());
                 String text = player.getDisplayName();
                 if (text.length() > 16) {
                     text = text.substring(0, 16);
@@ -94,7 +67,15 @@ public class GlobalTablistHandler extends TabList {
                 item.setPing(i);
                 pli.setItems(new Item[]{item});
                 for (ProxiedPlayer p : plugin.getProxy().getPlayers()) {
-                    p.unsafe().sendPacket(pli);
+                    try {
+                        TabList tablistHandler = GlobalTablist.getTablistHandler(p);
+                        if (tablistHandler instanceof GlobalTablistHandler2) {
+                            ((GlobalTablistHandler2) tablistHandler).onGlobalPlayerPingChange(this.player, i);
+                        }
+                    } catch (NoSuchFieldException | IllegalAccessException e) {
+                        e.printStackTrace();
+                    }
+                    if (p.getPendingConnection().getVersion() < 47) p.unsafe().sendPacket(pli);
                 }
             }
         }
@@ -104,8 +85,19 @@ public class GlobalTablistHandler extends TabList {
     public void onConnect() {
         // send players
         for (ProxiedPlayer p : plugin.getProxy().getPlayers()) {
-            sendPlayerSlot(p, getPlayer());
-            if (p == getPlayer()) {
+            try {
+                TabList tablistHandler = GlobalTablist.getTablistHandler(p);
+                if (tablistHandler instanceof GlobalTablistHandler2) {
+                    ((GlobalTablistHandler2) tablistHandler).onGlobalPlayerConnect(this.player);
+                }
+            } catch (NoSuchFieldException | IllegalAccessException e) {
+                e.printStackTrace();
+            }
+
+            if(getPlayer().getPendingConnection().getVersion() < 47){
+                sendPlayerSlot(p, getPlayer());
+            }
+            if (p == getPlayer() || p.getPendingConnection().getVersion() >= 47) {
                 continue;
             }
             sendPlayerSlot(getPlayer(), p);
@@ -119,18 +111,27 @@ public class GlobalTablistHandler extends TabList {
     public void onDisconnect() {
         // remove player
         for (ProxiedPlayer p : plugin.getProxy().getPlayers()) {
+            try {
+                TabList tablistHandler = GlobalTablist.getTablistHandler(p);
+                if (tablistHandler instanceof GlobalTablistHandler2) {
+                    ((GlobalTablistHandler2) tablistHandler).onGlobalPlayerDisconnect(this.player);
+                }
+            } catch (NoSuchFieldException | IllegalAccessException e) {
+                e.printStackTrace();
+            }
+
+            if (p.getPendingConnection().getVersion() >= 47) {
+                continue;
+            }
+
             removePlayerSlot(getPlayer(), p);
         }
     }
 
-    protected boolean is18Client(ProxiedPlayer player) {
-        return player.getPendingConnection().getVersion() >= 47;
-    }
-
-    protected void sendPlayerSlot(ProxiedPlayer player, ProxiedPlayer receiver) {
+    private void sendPlayerSlot(ProxiedPlayer player, ProxiedPlayer receiver) {
         String text = player.getDisplayName();
 
-        if (!is18Client(receiver) && text.length() > 16) {
+        if (text.length() > 16) {
             text = text.substring(0, 16);
         }
 
@@ -138,30 +139,7 @@ public class GlobalTablistHandler extends TabList {
         pli.setAction(PlayerListItem.Action.ADD_PLAYER);
         Item item = new Item();
         item.setPing(player.getPing());
-        if (!is18Client(receiver)) {
-            item.setDisplayName(text);
-        } else {
-            item.setUsername(player.getName());
-            item.setGamemode(((UserConnection) player).getGamemode());
-            item.setUuid(player.getUniqueId());
-            item.setProperties(new String[0][0]);
-            LoginResult loginResult = ((UserConnection) player).
-                    getPendingConnection().getLoginProfile();
-            if (loginResult != null) {
-                String[][] props = new String[loginResult.getProperties().length][];
-                for (int i = 0; i < props.length; i++) {
-                    props[i] = new String[]
-                            {
-                                    loginResult.getProperties()[i].getName(),
-                                    loginResult.getProperties()[i].getValue(),
-                                    loginResult.getProperties()[i].getSignature()
-                            };
-                }
-                item.setProperties(props);
-            } else {
-                item.setProperties(new String[0][0]);
-            }
-        }
+        item.setDisplayName(text);
         pli.setItems(new Item[]{item});
         receiver.unsafe().sendPacket(pli);
     }
@@ -170,16 +148,11 @@ public class GlobalTablistHandler extends TabList {
         PlayerListItem pli = new PlayerListItem();
         pli.setAction(PlayerListItem.Action.REMOVE_PLAYER);
         Item item = new Item();
-        if (is18Client(receiver)) {
-            item.setUsername(player.getName());
-            item.setUuid(player.getUniqueId());
-        } else {
-            String text = player.getDisplayName();
-            if (text.length() > 16) {
-                text = text.substring(0, 16);
-            }
-            item.setDisplayName(text);
+        String text = player.getDisplayName();
+        if (text.length() > 16) {
+            text = text.substring(0, 16);
         }
+        item.setDisplayName(text);
         pli.setItems(new Item[]{item});
         receiver.unsafe().sendPacket(pli);
     }

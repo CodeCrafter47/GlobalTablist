@@ -24,6 +24,7 @@ import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.event.PostLoginEvent;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
+import net.md_5.bungee.tab.TabList;
 
 public class TabListListener implements Listener {
 
@@ -38,7 +39,12 @@ public class TabListListener implements Listener {
             IllegalArgumentException, IllegalAccessException {
         if (plugin.getConfig().useGlobalTablist) {
             ProxiedPlayer player = e.getPlayer();
-            GlobalTablistHandler tablistHandler = new GlobalTablistHandler(player, plugin);
+            TabList tablistHandler;
+            if(player.getPendingConnection().getVersion() < 47){
+                tablistHandler = new GlobalTablistHandler(player, plugin);
+            } else {
+                tablistHandler = new GlobalTablistHandler2(player, plugin);
+            }
             GlobalTablist.setTablistHandler(player, tablistHandler);
         }
     }
