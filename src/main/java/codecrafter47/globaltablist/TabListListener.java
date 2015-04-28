@@ -18,14 +18,12 @@
  */
 package codecrafter47.globaltablist;
 
-import net.md_5.bungee.UserConnection;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.ComponentBuilder;
+import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.event.PostLoginEvent;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
-
-import java.lang.reflect.Field;
 
 public class TabListListener implements Listener {
 
@@ -39,10 +37,9 @@ public class TabListListener implements Listener {
     public void onPlayerJoin(PostLoginEvent e) throws NoSuchFieldException,
             IllegalArgumentException, IllegalAccessException {
         if (plugin.getConfig().useGlobalTablist) {
-            Class cplayer = UserConnection.class;
-            Field tabListHandler = cplayer.getDeclaredField("tabListHandler");
-            tabListHandler.setAccessible(true);
-            tabListHandler.set(e.getPlayer(), new GlobalTablistHandler(e.getPlayer(), plugin));
+            ProxiedPlayer player = e.getPlayer();
+            GlobalTablistHandler tablistHandler = new GlobalTablistHandler(player, plugin);
+            GlobalTablist.setTablistHandler(player, tablistHandler);
         }
     }
 
