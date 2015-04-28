@@ -92,6 +92,7 @@ public class GlobalTablistHandler extends TabList {
                 }
                 item.setDisplayName(text);
                 item.setPing(i);
+                pli.setItems(new Item[]{item});
                 for (ProxiedPlayer p : plugin.getProxy().getPlayers()) {
                     p.unsafe().sendPacket(pli);
                 }
