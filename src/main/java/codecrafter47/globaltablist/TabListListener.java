@@ -41,9 +41,9 @@ public class TabListListener implements Listener {
             ProxiedPlayer player = e.getPlayer();
             TabList tablistHandler;
             if(player.getPendingConnection().getVersion() < 47){
-                tablistHandler = new GlobalTablistHandler(player, plugin);
+                tablistHandler = new GlobalTablistHandler17(player, plugin);
             } else {
-                tablistHandler = new GlobalTablistHandler2(player, plugin);
+                tablistHandler = new GlobalTablistHandler18(player, plugin);
             }
             GlobalTablist.setTablistHandler(player, tablistHandler);
         }

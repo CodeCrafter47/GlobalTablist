@@ -20,7 +20,6 @@ package codecrafter47.globaltablist;
 
 import lombok.Synchronized;
 import net.md_5.bungee.UserConnection;
-import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.connection.LoginResult;
 import net.md_5.bungee.protocol.packet.PlayerListItem;
@@ -30,15 +29,16 @@ import java.util.*;
 /**
  * @author Florian Stober
  */
-public class GlobalTablistHandler2 extends GlobalTablistHandler {
-    private final Collection<UUID> uuids = new HashSet();
+public class GlobalTablistHandler18 extends GlobalTablistHandlerBase {
+    private final Collection<UUID> uuids = new HashSet<>();
     private final Collection<UUID> globalUUIDs = new HashSet<>();
 
-    public GlobalTablistHandler2(ProxiedPlayer player, GlobalTablist plugin) {
+    public GlobalTablistHandler18(ProxiedPlayer player, GlobalTablist plugin) {
         super(player, plugin);
     }
 
     @Synchronized
+    @Override
     public void onUpdate(PlayerListItem playerListItem) {
         PlayerListItem.Item[] var2 = playerListItem.getItems();
         int var3 = var2.length;
@@ -62,7 +62,7 @@ public class GlobalTablistHandler2 extends GlobalTablistHandler {
                 }
             }
 
-            if(!gamemodeList.isEmpty()){
+            if (!gamemodeList.isEmpty()) {
                 PlayerListItem pli = new PlayerListItem();
                 pli.setAction(PlayerListItem.Action.UPDATE_GAMEMODE);
                 pli.setItems(gamemodeList.toArray(new PlayerListItem.Item[gamemodeList.size()]));
@@ -76,6 +76,7 @@ public class GlobalTablistHandler2 extends GlobalTablistHandler {
     }
 
     @Synchronized
+    @Override
     public void onServerChange() {
         List<PlayerListItem.Item> removeList = new ArrayList<>();
         List<PlayerListItem.Item> gamemodeList = new ArrayList<>();
@@ -104,16 +105,9 @@ public class GlobalTablistHandler2 extends GlobalTablistHandler {
         this.uuids.clear();
     }
 
-    public void onConnect() {
-        for(ProxiedPlayer player: ProxyServer.getInstance().getPlayers()){
-            onGlobalPlayerConnect(player);
-        }
-
-        super.onConnect();
-    }
-
     @Synchronized
-    public void onGlobalPlayerConnect(ProxiedPlayer player) {
+    @Override
+    void onGlobalPlayerConnect(ProxiedPlayer player) {
         globalUUIDs.add(player.getUniqueId());
         PlayerListItem pli = new PlayerListItem();
         pli.setAction(PlayerListItem.Action.ADD_PLAYER);
@@ -144,9 +138,10 @@ public class GlobalTablistHandler2 extends GlobalTablistHandler {
     }
 
     @Synchronized
-    public void onGlobalPlayerDisconnect(ProxiedPlayer player) {
+    @Override
+    void onGlobalPlayerDisconnect(ProxiedPlayer player) {
         globalUUIDs.remove(player.getUniqueId());
-        if(uuids.contains(player.getUniqueId())){
+        if (uuids.contains(player.getUniqueId())) {
             return;
         }
         PlayerListItem pli = new PlayerListItem();
@@ -158,8 +153,9 @@ public class GlobalTablistHandler2 extends GlobalTablistHandler {
     }
 
     @Synchronized
-    public void onGlobalPlayerPingChange(ProxiedPlayer player, int ping) {
-        if(uuids.contains(player.getUniqueId()))return;
+    @Override
+    void onGlobalPlayerPingChange(ProxiedPlayer player, int ping) {
+        if (uuids.contains(player.getUniqueId())) return;
         PlayerListItem pli = new PlayerListItem();
         pli.setAction(PlayerListItem.Action.UPDATE_LATENCY);
         PlayerListItem.Item item = new PlayerListItem.Item();
