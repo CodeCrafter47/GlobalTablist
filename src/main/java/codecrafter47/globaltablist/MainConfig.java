@@ -61,6 +61,13 @@ public class MainConfig extends Config {
     public String footer = "&4minecraft.net";
 
     @Comments({
+            "Whether to pass through display names retrieved from bukkit/ spigot",
+            "if enabled you can get tab colors using a plugin like TabPrefixes(http://www.spigotmc.org/resources/tabprefixes.4132/)",
+            "NOTE: only 1.8 clients will be able to see the colored names"
+    })
+    public boolean forwardDisplayNames = true;
+
+    @Comments({
             "Shows players on other servers as spectators",
             "This makes it easy to tell who's on the same server as you",
             "This also fixes a bug in spectator mode where players ",
