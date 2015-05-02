@@ -91,6 +91,9 @@ public class GlobalTablistHandler18 extends GlobalTablistHandlerBase {
             }
             return;
         }
+        if(!plugin.getConfig().updatePing && playerListItem.getAction() == PlayerListItem.Action.UPDATE_LATENCY){
+            return;
+        }
         onUpdate0(playerListItem);
     }
 
