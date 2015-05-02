@@ -27,6 +27,7 @@ import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.tab.TabList;
 
+import java.io.File;
 import java.lang.reflect.Field;
 import java.util.logging.Level;
 
@@ -83,7 +84,10 @@ public class GlobalTablist extends Plugin {
 
         INSTANCE = this;
         try {
-            config = new MainConfig(this);
+            if(!getDataFolder().exists())getDataFolder().mkdirs();
+            config = new MainConfig();
+            config.init(new File(getDataFolder(), "config.yml"));
+            config.save();
         } catch (InvalidConfigurationException ex) {
             getLogger().warning("Unable to load Config");
             getLogger().log(Level.WARNING, null, ex);

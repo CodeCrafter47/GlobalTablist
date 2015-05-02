@@ -20,10 +20,7 @@ package codecrafter47.globaltablist;
 
 import net.cubespace.Yamler.Config.Comments;
 import net.cubespace.Yamler.Config.Config;
-import net.cubespace.Yamler.Config.InvalidConfigurationException;
-import net.md_5.bungee.api.plugin.Plugin;
 
-import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 
@@ -81,14 +78,4 @@ public class MainConfig extends Config {
             " - {player} will be replaced with the name of the player"
     })
     public List<String> custom_lines_top = Arrays.asList("&6Welcome", "&6{player}", "&6to our server", "", "", "");
-
-    public MainConfig(Plugin plugin) throws InvalidConfigurationException {
-        CONFIG_FILE = new File("plugins" + File.separator + plugin.
-                getDescription().getName(), "config.yml");
-        CONFIG_HEADER = new String[]{
-                "",
-                ""};
-
-        this.init();
-    }
 }
