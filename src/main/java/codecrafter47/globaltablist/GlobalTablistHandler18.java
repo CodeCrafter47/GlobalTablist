@@ -23,6 +23,7 @@ import net.md_5.bungee.UserConnection;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.connection.LoginResult;
 import net.md_5.bungee.protocol.packet.PlayerListItem;
+import net.md_5.bungee.tab.TabList;
 
 import java.util.*;
 
@@ -37,26 +38,51 @@ public class GlobalTablistHandler18 extends GlobalTablistHandlerBase {
         super(player, plugin);
     }
 
-    @Synchronized
     @Override
     public void onUpdate(PlayerListItem playerListItem) {
+        if(!plugin.getConfig().showPlayersOnOtherServersAsSpectators && playerListItem.getAction() == PlayerListItem.Action.UPDATE_GAMEMODE){
+            List<PlayerListItem.Item> itemList = new ArrayList<>();
+            for (PlayerListItem.Item item : playerListItem.getItems()) {
+                if(item.getUuid().equals(getPlayer().getUniqueId())){
+                    for (ProxiedPlayer p : plugin.getProxy().getPlayers()) {
+                        try {
+                            TabList tablistHandler = GlobalTablist.getTablistHandler(p);
+                            if (tablistHandler instanceof GlobalTablistHandler18) {
+                                ((GlobalTablistHandler18) tablistHandler).onGlobalPlayerGamemodeChange(this.player, item.getGamemode());
+                            }
+                        } catch (NoSuchFieldException | IllegalAccessException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                } else if(!globalUUIDs.contains(item.getUuid())){
+                    itemList.add(item);
+                }
+            }
+            if(!itemList.isEmpty()){
+                playerListItem.setItems(itemList.toArray(new PlayerListItem.Item[itemList.size()]));
+                this.player.unsafe().sendPacket(playerListItem);
+            }
+            return;
+        }
+        onUpdate0(playerListItem);
+    }
+
+    @Synchronized
+    private void onUpdate0(PlayerListItem playerListItem) {
         PlayerListItem.Item[] var2 = playerListItem.getItems();
-        int var3 = var2.length;
 
         if (playerListItem.getAction() == PlayerListItem.Action.ADD_PLAYER) {
-            for (int var4 = 0; var4 < var3; ++var4) {
-                PlayerListItem.Item item = var2[var4];
+            for (PlayerListItem.Item item : var2) {
                 this.uuids.add(item.getUuid());
             }
         } else if (playerListItem.getAction() == PlayerListItem.Action.REMOVE_PLAYER) {
             List<PlayerListItem.Item> itemList = new ArrayList<>();
             List<PlayerListItem.Item> gamemodeList = new ArrayList<>();
-            for (int var4 = 0; var4 < var3; ++var4) {
-                PlayerListItem.Item item = var2[var4];
+            for (PlayerListItem.Item item : var2) {
                 this.uuids.remove(item.getUuid());
                 if (!globalUUIDs.contains(item.getUuid())) {
                     itemList.add(item);
-                } else {
+                } else if(plugin.getConfig().showPlayersOnOtherServersAsSpectators){
                     item.setGamemode(3);
                     gamemodeList.add(item);
                 }
@@ -86,7 +112,7 @@ public class GlobalTablistHandler18 extends GlobalTablistHandlerBase {
             item.setUuid(uuid);
             if (!globalUUIDs.contains(uuid)) {
                 removeList.add(item);
-            } else {
+            } else if(plugin.getConfig().showPlayersOnOtherServersAsSpectators){
                 item.setGamemode(3);
                 gamemodeList.add(item);
             }
@@ -114,7 +140,7 @@ public class GlobalTablistHandler18 extends GlobalTablistHandlerBase {
         PlayerListItem.Item item = new PlayerListItem.Item();
         item.setPing(player.getPing());
         item.setUsername(player.getName());
-        item.setGamemode(uuids.contains(player.getUniqueId()) ? ((UserConnection) player).getGamemode() : 3);
+        item.setGamemode(uuids.contains(player.getUniqueId()) || !plugin.getConfig().showPlayersOnOtherServersAsSpectators ? ((UserConnection) player).getGamemode() : 3);
         item.setUuid(player.getUniqueId());
         item.setProperties(new String[0][0]);
         LoginResult loginResult = ((UserConnection) player).
@@ -161,6 +187,18 @@ public class GlobalTablistHandler18 extends GlobalTablistHandlerBase {
         PlayerListItem.Item item = new PlayerListItem.Item();
         item.setUuid(player.getUniqueId());
         item.setPing(ping);
+        pli.setItems(new PlayerListItem.Item[]{item});
+        this.player.unsafe().sendPacket(pli);
+    }
+
+    @Synchronized
+    void onGlobalPlayerGamemodeChange(ProxiedPlayer player, int gamemode) {
+        if (uuids.contains(player.getUniqueId())) return;
+        PlayerListItem pli = new PlayerListItem();
+        pli.setAction(PlayerListItem.Action.UPDATE_GAMEMODE);
+        PlayerListItem.Item item = new PlayerListItem.Item();
+        item.setUuid(player.getUniqueId());
+        item.setGamemode(gamemode);
         pli.setItems(new PlayerListItem.Item[]{item});
         this.player.unsafe().sendPacket(pli);
     }

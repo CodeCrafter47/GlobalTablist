@@ -61,6 +61,14 @@ public class MainConfig extends Config {
     public String footer = "&4minecraft.net";
 
     @Comments({
+            "Shows players on other servers as spectators",
+            "This makes it easy to tell who's on the same server as you",
+            "This also fixes a bug in spectator mode where players ",
+            "on other servers show up in the teleport to list"
+    })
+    public boolean showPlayersOnOtherServersAsSpectators = true;
+
+    @Comments({
             "On 1.7 clients this replaces the missing header and footer.",
             "You can add some custom text slots at the top of the player list",
             " - {player} will be replaced with the name of the player"
