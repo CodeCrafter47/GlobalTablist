@@ -99,6 +99,14 @@ public class GlobalTablist extends Plugin {
 
         ProxyServer.getInstance().getPluginManager().registerListener(this,
                 listener);
+
+        // Start metrics
+        try {
+            Metrics metrics = new Metrics(this);
+            metrics.start();
+        } catch (Throwable th) {
+            getLogger().log(Level.WARNING, "Failed to initialize Metrics", th);
+        }
     }
 
     /**
