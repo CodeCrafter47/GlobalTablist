@@ -3,3 +3,4 @@ main : codecrafter47.globaltablist.GlobalTablist
 version: ${version}
 author: CodeCrafter47
 depends: ['Yamler']
+softDepends: ['RedisBungee']

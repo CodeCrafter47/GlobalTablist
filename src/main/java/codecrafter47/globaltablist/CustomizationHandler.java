@@ -18,6 +18,8 @@
  */
 package codecrafter47.globaltablist;
 
+import com.imaginarycode.minecraft.redisbungee.RedisBungee;
+import com.imaginarycode.minecraft.redisbungee.RedisBungeeAPI;
 import lombok.Getter;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.ProxyServer;
@@ -217,6 +219,37 @@ public class CustomizationHandler implements Listener {
                 return Integer.toString(ProxyServer.getInstance().getConfig().getPlayerLimit());
             }
         });
+
+        if(plugin.getProxy().getPluginManager().getPlugin("RedisBungee") != null){
+            variables.add(new Variable("redis_online", true) {
+
+                int last = 0;
+
+                @Override
+                String getReplacement(ProxiedPlayer player) {
+                    return Integer.toString(last);
+                }
+
+                @Override
+                protected void onCreate() {
+                    super.onCreate();
+                    plugin.getProxy().getScheduler().schedule(plugin, new Runnable() {
+                        @Override
+                        public void run() {
+                            int i = RedisBungee.getApi().getPlayerCount();
+                            if(i != last){
+                                last = i;
+                                for(Updateable updateable: onChange){
+                                    for (ProxiedPlayer player: plugin.getProxy().getPlayers()){
+                                        updateable.update(player);
+                                    }
+                                }
+                            }
+                        }
+                    }, 1000, 1000, TimeUnit.MILLISECONDS);
+                }
+            });
+        }
 
         for(Variable var: variables){
             for(Updateable updateable: customText){
