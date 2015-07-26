@@ -26,6 +26,25 @@ import java.util.List;
 
 public class MainConfig extends Config {
 
+    public MainConfig() {
+        super();
+        CONFIG_HEADER = new String[]{
+                "This is the config file of GlobalTabList,",
+                "An innovative and fast tablist plugin",
+                "",
+                "Variables you can use in header, footer and custom slots:",
+                " - {player} will be replaced with the name of the player",
+                " - {newline} will insert a linebreak, only in header and footer",
+                " - {server} the server the player is playing on",
+                " - {online} total number of players online",
+                " - {online_<server>} numbers of players on a specific server, <server> must be replaced wit the name of the server",
+                " - {max} maximum amount of players that may connect to this bungee instance",
+                " - {shown_max} player maximum as shown to clients in the server list",
+                " - {redis_online} if using RedisBungee the amount of players online on your network",
+                " - {redis_online_<server>} amount of players on a specific server if using RedisBungee"
+        };
+    }
+
     @Comments({
             "true: global tablist",
             "false: server unique tablist"
@@ -44,16 +63,12 @@ public class MainConfig extends Config {
     public boolean showHeaderFooter = true;
 
     @Comments({
-            "This text will be shown above the tablist on 1.8 clients",
-            " - {player} will be replaced with the name of the player",
-            " - {newline} will insert a linebreak"
+            "This text will be shown above the tablist on 1.8 clients"
     })
     public String header = "&6Welcome &f{player}";
 
     @Comments({
-            "This text will be shown below the tablist on 1.8 clients",
-            " - {player} will be replaced with the name of the player",
-            " - {newline} will insert a linebreak"
+            "This text will be shown below the tablist on 1.8 clients"
     })
     public String footer = "&4minecraft.net";
 
@@ -74,8 +89,7 @@ public class MainConfig extends Config {
 
     @Comments({
             "On 1.7 clients this replaces the missing header and footer.",
-            "You can add some custom text slots at the top of the player list",
-            " - {player} will be replaced with the name of the player"
+            "You can add some custom text slots at the top of the player list"
     })
     public List<String> custom_lines_top = Arrays.asList("&6Welcome", "&6{player}", "&6to our server", "", "", "");
 }
