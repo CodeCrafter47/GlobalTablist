@@ -243,6 +243,13 @@ public class CustomizationHandler implements Listener {
             });
         }
 
+        variables.add(new Variable("shown_max") {
+
+            @Override
+            String getReplacement(ProxiedPlayer player) {
+                return Integer.toString(ProxyServer.getInstance().getConfig().getListeners().iterator().next().getMaxPlayers());
+            }
+        });
 
         variables.add(new Variable("max") {
 
