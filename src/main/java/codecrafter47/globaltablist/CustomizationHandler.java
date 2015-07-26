@@ -212,6 +212,38 @@ public class CustomizationHandler implements Listener {
             }
         });
 
+        for (final String serverName : plugin.getProxy().getServers().keySet()) {
+            variables.add(new Variable(String.format("online_%s", serverName), true) {
+
+                int last = 0;
+
+                @Override
+                String getReplacement(ProxiedPlayer player) {
+                    return Integer.toString(last);
+                }
+
+                @Override
+                protected void onCreate() {
+                    super.onCreate();
+                    plugin.getProxy().getScheduler().schedule(plugin, new Runnable() {
+                        @Override
+                        public void run() {
+                            int i = ProxyServer.getInstance().getServerInfo(serverName).getPlayers().size();
+                            if(i != last){
+                                last = i;
+                                for(Updateable updateable: onChange){
+                                    for (ProxiedPlayer player: plugin.getProxy().getPlayers()){
+                                        updateable.update(player);
+                                    }
+                                }
+                            }
+                        }
+                    }, 1000, 1000, TimeUnit.MILLISECONDS);
+                }
+            });
+        }
+
+
         variables.add(new Variable("max") {
 
             @Override
@@ -249,6 +281,37 @@ public class CustomizationHandler implements Listener {
                     }, 1000, 1000, TimeUnit.MILLISECONDS);
                 }
             });
+
+            for (final String serverName : plugin.getProxy().getServers().keySet()) {
+                variables.add(new Variable(String.format("redis_online_%s", serverName), true) {
+
+                    int last = 0;
+
+                    @Override
+                    String getReplacement(ProxiedPlayer player) {
+                        return Integer.toString(last);
+                    }
+
+                    @Override
+                    protected void onCreate() {
+                        super.onCreate();
+                        plugin.getProxy().getScheduler().schedule(plugin, new Runnable() {
+                            @Override
+                            public void run() {
+                                int i = RedisBungee.getApi().getPlayersOnServer(serverName).size();
+                                if(i != last){
+                                    last = i;
+                                    for(Updateable updateable: onChange){
+                                        for (ProxiedPlayer player: plugin.getProxy().getPlayers()){
+                                            updateable.update(player);
+                                        }
+                                    }
+                                }
+                            }
+                        }, 1000, 1000, TimeUnit.MILLISECONDS);
+                    }
+                });
+            }
         }
 
         for(Variable var: variables){
