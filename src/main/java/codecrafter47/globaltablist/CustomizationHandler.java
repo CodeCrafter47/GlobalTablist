@@ -46,7 +46,6 @@ public class CustomizationHandler implements Listener {
     private List<Updateable> customText = new ArrayList<>();
 
     private final static String[] fakePlayers = {"§m§4§7§k§o§l§0§r", "§m§4§7§k§o§l§1§r", "§m§4§7§k§o§l§2§r", "§m§4§7§k§o§l§3§r", "§m§4§7§k§o§l§4§r", "§m§4§7§k§o§l§5§r", "§m§4§7§k§o§l§6§r", "§m§4§7§k§o§l§7§r", "§m§4§7§k§o§l§8§r", "§m§4§7§k§o§l§9§r", "§m§4§7§k§o§l§a§r", "§m§4§7§k§o§l§b§r", "§m§4§7§k§o§l§c§r", "§m§4§7§k§o§l§d§r", "§m§4§7§k§o§l§e§r", "§m§4§7§k§o§l§f§r"};
-    private final List<Updateable> updateOnServerSwitch = new ArrayList<>();
 
     public CustomizationHandler(final GlobalTablist plugin) {
         this.plugin = plugin;
