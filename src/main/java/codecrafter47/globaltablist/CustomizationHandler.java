@@ -32,9 +32,7 @@ import net.md_5.bungee.event.EventHandler;
 import net.md_5.bungee.protocol.packet.PlayerListItem;
 import net.md_5.bungee.protocol.packet.Team;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -275,7 +273,9 @@ public class CustomizationHandler implements Listener {
                     plugin.getProxy().getScheduler().schedule(plugin, new Runnable() {
                         @Override
                         public void run() {
-                            int i = RedisBungee.getApi().getPlayerCount();
+                            RedisBungeeAPI api = RedisBungee.getApi();
+                            if(api == null)return;
+                            int i = api.getPlayerCount();
                             if(i != last){
                                 last = i;
                                 for(Updateable updateable: onChange){
@@ -305,7 +305,10 @@ public class CustomizationHandler implements Listener {
                         plugin.getProxy().getScheduler().schedule(plugin, new Runnable() {
                             @Override
                             public void run() {
-                                int i = RedisBungee.getApi().getPlayersOnServer(serverName).size();
+                                RedisBungeeAPI api = RedisBungee.getApi();
+                                if(api == null)return;
+                                Set<UUID> playersOnServer = api.getPlayersOnServer(serverName);
+                                int i = playersOnServer != null ? playersOnServer.size() : 0;
                                 if(i != last){
                                     last = i;
                                     for(Updateable updateable: onChange){
