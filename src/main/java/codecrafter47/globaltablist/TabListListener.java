@@ -46,6 +46,7 @@ public class TabListListener implements Listener {
                 tablistHandler = new GlobalTablistHandler18(player, plugin);
             }
             GlobalTablist.setTablistHandler(player, tablistHandler);
+            tablistHandler.onConnect();
         }
     }
 
