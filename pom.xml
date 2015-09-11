@@ -6,7 +6,7 @@
 
     <groupId>codecrafter47.globaltablist</groupId>
     <artifactId>GlobalTablist</artifactId>
-    <version>1.6-SNAPSHOT</version>
+    <version>1.6</version>
     <packaging>jar</packaging>
 
     <repositories>
