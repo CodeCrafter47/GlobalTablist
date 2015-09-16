@@ -32,7 +32,7 @@ import java.util.*;
  */
 public class GlobalTablistHandler18 extends GlobalTablistHandlerBase {
     private final Collection<UUID> uuids = new HashSet<>();
-    private final Collection<UUID> globalUUIDs = new HashSet<>();
+    private final UUIDSet globalUUIDs = new UUIDSet();
     private final Map<UUID, String> displayNames = new HashMap<>();
 
     public GlobalTablistHandler18(ProxiedPlayer player, GlobalTablist plugin) {
@@ -41,57 +41,47 @@ public class GlobalTablistHandler18 extends GlobalTablistHandlerBase {
 
     @Override
     public void onUpdate(PlayerListItem playerListItem) {
-        if(!plugin.getConfig().showPlayersOnOtherServersAsSpectators && playerListItem.getAction() == PlayerListItem.Action.UPDATE_GAMEMODE){
+        if (!plugin.getConfig().showPlayersOnOtherServersAsSpectators && playerListItem.getAction() == PlayerListItem.Action.UPDATE_GAMEMODE) {
             List<PlayerListItem.Item> itemList = new ArrayList<>();
             for (PlayerListItem.Item item : playerListItem.getItems()) {
-                if(item.getUuid().equals(getPlayer().getUniqueId())){
-                    for (ProxiedPlayer p : plugin.getProxy().getPlayers()) {
-                        try {
-                            TabList tablistHandler = GlobalTablist.getTablistHandler(p);
-                            if (tablistHandler instanceof GlobalTablistHandler18) {
-                                ((GlobalTablistHandler18) tablistHandler).onGlobalPlayerGamemodeChange(this.player, item.getGamemode());
-                            }
-                        } catch (NoSuchFieldException | IllegalAccessException e) {
-                            e.printStackTrace();
+                if (item.getUuid().equals(getPlayer().getUniqueId())) {
+                    for (GlobalTablistHandlerBase tablistHandler : tablistHandlers) {
+                        if (tablistHandler instanceof GlobalTablistHandler18) {
+                            ((GlobalTablistHandler18) tablistHandler).onGlobalPlayerGamemodeChange(this.player, item.getGamemode());
                         }
                     }
-                } else if(!globalUUIDs.contains(item.getUuid())){
+                } else if (!globalUUIDs.contains(item.getUuid())) {
                     itemList.add(item);
                 }
             }
-            if(!itemList.isEmpty()){
+            if (!itemList.isEmpty()) {
                 playerListItem.setItems(itemList.toArray(new PlayerListItem.Item[itemList.size()]));
                 this.player.unsafe().sendPacket(playerListItem);
             }
             return;
         }
-        if(playerListItem.getAction() == PlayerListItem.Action.UPDATE_DISPLAY_NAME) {
+        if (playerListItem.getAction() == PlayerListItem.Action.UPDATE_DISPLAY_NAME) {
             if (plugin.getConfig().forwardDisplayNames) {
                 List<PlayerListItem.Item> itemList = new ArrayList<>();
                 for (PlayerListItem.Item item : playerListItem.getItems()) {
-                    if(item.getUuid().equals(getPlayer().getUniqueId())){
-                        for (ProxiedPlayer p : plugin.getProxy().getPlayers()) {
-                            try {
-                                TabList tablistHandler = GlobalTablist.getTablistHandler(p);
-                                if (tablistHandler instanceof GlobalTablistHandler18) {
-                                    ((GlobalTablistHandler18) tablistHandler).onGlobalPlayerDisplayNameChange(this.player, item.getDisplayName());
-                                }
-                            } catch (NoSuchFieldException | IllegalAccessException e) {
-                                e.printStackTrace();
+                    if (item.getUuid().equals(getPlayer().getUniqueId())) {
+                        for (GlobalTablistHandlerBase tablistHandler : tablistHandlers) {
+                            if (tablistHandler instanceof GlobalTablistHandler18) {
+                                ((GlobalTablistHandler18) tablistHandler).onGlobalPlayerDisplayNameChange(this.player, item.getDisplayName());
                             }
                         }
-                    } else if(!globalUUIDs.contains(item.getUuid())){
+                    } else if (!globalUUIDs.contains(item.getUuid())) {
                         itemList.add(item);
                     }
                 }
-                if(!itemList.isEmpty()){
+                if (!itemList.isEmpty()) {
                     playerListItem.setItems(itemList.toArray(new PlayerListItem.Item[itemList.size()]));
                     this.player.unsafe().sendPacket(playerListItem);
                 }
             }
             return;
         }
-        if(!plugin.getConfig().updatePing && playerListItem.getAction() == PlayerListItem.Action.UPDATE_LATENCY){
+        if (!plugin.getConfig().updatePing && playerListItem.getAction() == PlayerListItem.Action.UPDATE_LATENCY) {
             return;
         }
         onUpdate0(playerListItem);
@@ -113,7 +103,7 @@ public class GlobalTablistHandler18 extends GlobalTablistHandlerBase {
                 this.uuids.remove(item.getUuid());
                 if (!globalUUIDs.contains(item.getUuid())) {
                     itemList.add(item);
-                } else if(plugin.getConfig().showPlayersOnOtherServersAsSpectators){
+                } else if (plugin.getConfig().showPlayersOnOtherServersAsSpectators) {
                     item.setGamemode(3);
                     gamemodeList.add(item);
                 }
@@ -143,7 +133,7 @@ public class GlobalTablistHandler18 extends GlobalTablistHandlerBase {
             item.setUuid(uuid);
             if (!globalUUIDs.contains(uuid)) {
                 removeList.add(item);
-            } else if(plugin.getConfig().showPlayersOnOtherServersAsSpectators){
+            } else if (plugin.getConfig().showPlayersOnOtherServersAsSpectators) {
                 item.setGamemode(3);
                 gamemodeList.add(item);
             }
@@ -192,7 +182,7 @@ public class GlobalTablistHandler18 extends GlobalTablistHandlerBase {
         }
         pli.setItems(new PlayerListItem.Item[]{item});
         this.player.unsafe().sendPacket(pli);
-        if(displayNames.containsKey(player.getUniqueId())){
+        if (displayNames.containsKey(player.getUniqueId())) {
             pli = new PlayerListItem();
             pli.setAction(PlayerListItem.Action.UPDATE_DISPLAY_NAME);
             item = new PlayerListItem.Item();
@@ -207,7 +197,7 @@ public class GlobalTablistHandler18 extends GlobalTablistHandlerBase {
     @Override
     void onGlobalPlayerDisconnect(ProxiedPlayer player) {
         globalUUIDs.remove(player.getUniqueId());
-        if (uuids.contains(player.getUniqueId())) {
+        if (uuids.contains(player.getUniqueId()) || globalUUIDs.contains(player.getUniqueId())) {
             return;
         }
         PlayerListItem pli = new PlayerListItem();
