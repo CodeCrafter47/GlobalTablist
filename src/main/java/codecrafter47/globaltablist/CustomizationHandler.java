@@ -31,6 +31,7 @@ import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
 import net.md_5.bungee.protocol.packet.PlayerListItem;
 import net.md_5.bungee.protocol.packet.Team;
+import net.md_5.bungee.tab.TabList;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -45,7 +46,7 @@ public class CustomizationHandler implements Listener {
     private Collection<Variable> variables = new ArrayList<>();
     private List<Updateable> customText = new ArrayList<>();
 
-    private final static String[] fakePlayers = {"§m§4§7§k§o§l§0§r", "§m§4§7§k§o§l§1§r", "§m§4§7§k§o§l§2§r", "§m§4§7§k§o§l§3§r", "§m§4§7§k§o§l§4§r", "§m§4§7§k§o§l§5§r", "§m§4§7§k§o§l§6§r", "§m§4§7§k§o§l§7§r", "§m§4§7§k§o§l§8§r", "§m§4§7§k§o§l§9§r", "§m§4§7§k§o§l§a§r", "§m§4§7§k§o§l§b§r", "§m§4§7§k§o§l§c§r", "§m§4§7§k§o§l§d§r", "§m§4§7§k§o§l§e§r", "§m§4§7§k§o§l§f§r"};
+    final static String[] fakePlayers = {"§m§4§7§k§o§l§0§r", "§m§4§7§k§o§l§1§r", "§m§4§7§k§o§l§2§r", "§m§4§7§k§o§l§3§r", "§m§4§7§k§o§l§4§r", "§m§4§7§k§o§l§5§r", "§m§4§7§k§o§l§6§r", "§m§4§7§k§o§l§7§r", "§m§4§7§k§o§l§8§r", "§m§4§7§k§o§l§9§r", "§m§4§7§k§o§l§a§r", "§m§4§7§k§o§l§b§r", "§m§4§7§k§o§l§c§r", "§m§4§7§k§o§l§d§r", "§m§4§7§k§o§l§e§r", "§m§4§7§k§o§l§f§r"};
 
     public CustomizationHandler(final GlobalTablist plugin) {
         this.plugin = plugin;
@@ -82,19 +83,25 @@ public class CustomizationHandler implements Listener {
                         }, 200, TimeUnit.MILLISECONDS);
                         return;
                     }
-                    String text = replaceVariables(text2, player);
-                    text = ChatColor.translateAlternateColorCodes('&', text);
-                    String split[] = splitText(text);
-                    Team t = new Team();
-                    t.setName("GTAB#" + id);
-                    t.setMode(!player.hasPermission("globaltablist.initialized"+id)? (byte) 0: (byte) 2);
-                    t.setPrefix(split[0]);
-                    t.setDisplayName("");
-                    t.setSuffix(split[1]);
-                    t.setPlayers(new String[]{fakePlayers[id]});
-                    player.unsafe().sendPacket(t);
-                    if(!player.hasPermission("globaltablist.initialized"+id)){
-                        player.setPermission("globaltablist.initialized"+id, true);
+                    TabList tablistHandler = null;
+                    try {
+                        tablistHandler = GlobalTablist.getTablistHandler(player);
+                    } catch (NoSuchFieldException | IllegalAccessException e) {
+                        e.printStackTrace();
+                    }
+                    if (tablistHandler != null && tablistHandler instanceof GlobalTablistHandler17) {
+                        String text = replaceVariables(text2, player);
+                        text = ChatColor.translateAlternateColorCodes('&', text);
+                        String split[] = splitText(text);
+                        Team t = new Team();
+                        t.setName("GTAB#" + id);
+                        t.setMode(!((GlobalTablistHandler17) tablistHandler).createdCustomSlots.contains(id) ? (byte) 0 : (byte) 2);
+                        t.setPrefix(split[0]);
+                        t.setDisplayName("");
+                        t.setSuffix(split[1]);
+                        t.setPlayers(new String[]{fakePlayers[id]});
+                        player.unsafe().sendPacket(t);
+                        ((GlobalTablistHandler17) tablistHandler).createdCustomSlots.add(id);
                     }
                 }
 
@@ -117,18 +124,6 @@ public class CustomizationHandler implements Listener {
     }
 
     private void sendCustomization(ProxiedPlayer player) {
-        if (player.getPendingConnection().getVersion() < 47) {
-            for (int i = 0; i < plugin.getConfig().custom_lines_top.size() && i < fakePlayers.length; i++) {
-                PlayerListItem pli = new PlayerListItem();
-                pli.setAction(PlayerListItem.Action.ADD_PLAYER);
-                PlayerListItem.Item item = new PlayerListItem.Item();
-                item.setDisplayName(fakePlayers[i]);
-                item.setPing(0);
-                pli.setItems(new PlayerListItem.Item[]{item});
-                player.unsafe().sendPacket(pli);
-                player.setPermission("globaltablist.initialized"+i, false);
-            }
-        }
         for(Updateable updateable: customText){
             updateable.update(player);
         }

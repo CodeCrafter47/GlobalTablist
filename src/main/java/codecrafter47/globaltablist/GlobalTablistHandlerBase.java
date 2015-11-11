@@ -18,6 +18,7 @@
  */
 package codecrafter47.globaltablist;
 
+import gnu.trove.set.TIntSet;
 import gnu.trove.set.hash.TLinkedHashSet;
 import net.md_5.bungee.UserConnection;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
@@ -28,11 +29,7 @@ import net.md_5.bungee.tab.TabList;
 import java.util.Collections;
 import java.util.Set;
 
-/**
- * @author Florian Stober
- */
 public abstract class GlobalTablistHandlerBase extends TabList {
-
     protected final GlobalTablist plugin;
 
     protected int lastPing = 0;

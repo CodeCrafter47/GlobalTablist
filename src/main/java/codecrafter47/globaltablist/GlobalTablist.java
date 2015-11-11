@@ -32,7 +32,7 @@ import java.lang.reflect.Field;
 import java.util.logging.Level;
 
 /**
- * Main Class of BungeeTabListPlus
+ * Main Class of GlobalTablist
  *
  * @author Florian Stober
  */

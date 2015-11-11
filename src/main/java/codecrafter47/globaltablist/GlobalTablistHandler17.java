@@ -1,14 +1,29 @@
 package codecrafter47.globaltablist;
 
+import gnu.trove.set.TIntSet;
+import gnu.trove.set.hash.TIntHashSet;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.protocol.packet.PlayerListItem;
 
-/**
- * Created by florian on 29.04.15.
- */
 public class GlobalTablistHandler17 extends GlobalTablistHandlerBase {
+    TIntSet createdCustomSlots = new TIntHashSet(0);
+
     public GlobalTablistHandler17(ProxiedPlayer player, GlobalTablist plugin) {
         super(player, plugin);
+    }
+
+    @Override
+    public void onConnect() {
+        for (int i = 0; i < plugin.getConfig().custom_lines_top.size() && i < CustomizationHandler.fakePlayers.length; i++) {
+            PlayerListItem pli = new PlayerListItem();
+            pli.setAction(PlayerListItem.Action.ADD_PLAYER);
+            PlayerListItem.Item item = new PlayerListItem.Item();
+        item.setDisplayName(CustomizationHandler.fakePlayers[i]);
+            item.setPing(0);
+            pli.setItems(new PlayerListItem.Item[]{item});
+            player.unsafe().sendPacket(pli);
+        }
+        super.onConnect();
     }
 
     @Override
