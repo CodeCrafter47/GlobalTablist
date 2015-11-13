@@ -18,7 +18,6 @@
  */
 package codecrafter47.globaltablist;
 
-import gnu.trove.set.TIntSet;
 import gnu.trove.set.hash.TLinkedHashSet;
 import net.md_5.bungee.UserConnection;
 import net.md_5.bungee.api.connection.ProxiedPlayer;

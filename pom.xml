@@ -9,6 +9,24 @@
     <version>1.7-SNAPSHOT</version>
     <packaging>jar</packaging>
 
+    <scm>
+        <developerConnection>scm:git:https://github.com/CodeCrafter47/GlobalTablist</developerConnection>
+        <tag>HEAD</tag>
+    </scm>
+
+    <distributionManagement>
+        <repository>
+            <id>deployment</id>
+            <name>Internal Releases</name>
+            <url>http://nexus.codecrafter47.dyndns.eu/content/repositories/releases/</url>
+        </repository>
+        <snapshotRepository>
+            <id>deployment</id>
+            <name>Internal Releases</name>
+            <url>http://nexus.codecrafter47.dyndns.eu/content/repositories/snapshots/</url>
+        </snapshotRepository>
+    </distributionManagement>
+
     <repositories>
         <repository>
             <id>bungeecord-repo</id>
