@@ -14,6 +14,7 @@ public class GlobalTablistHandler17 extends GlobalTablistHandlerBase {
 
     @Override
     public void onConnect() {
+        // create custom slots for decoration
         for (int i = 0; i < plugin.getConfig().custom_lines_top.size() && i < CustomizationHandler.fakePlayers.length; i++) {
             PlayerListItem pli = new PlayerListItem();
             pli.setAction(PlayerListItem.Action.ADD_PLAYER);
@@ -23,6 +24,8 @@ public class GlobalTablistHandler17 extends GlobalTablistHandlerBase {
             pli.setItems(new PlayerListItem.Item[]{item});
             player.unsafe().sendPacket(pli);
         }
+
+        // invoke super
         super.onConnect();
     }
 

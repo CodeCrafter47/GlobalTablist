@@ -18,15 +18,17 @@
  */
 package codecrafter47.globaltablist;
 
-import gnu.trove.set.hash.TLinkedHashSet;
+import gnu.trove.set.hash.THashSet;
 import net.md_5.bungee.UserConnection;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.connection.Server;
+import net.md_5.bungee.netty.ChannelWrapper;
 import net.md_5.bungee.protocol.packet.PlayerListItem;
 import net.md_5.bungee.tab.TabList;
 
 import java.util.Collections;
 import java.util.Set;
+import java.util.logging.Level;
 
 public abstract class GlobalTablistHandlerBase extends TabList {
     protected final GlobalTablist plugin;
@@ -34,11 +36,39 @@ public abstract class GlobalTablistHandlerBase extends TabList {
     protected int lastPing = 0;
     protected boolean connected = false;
 
-    protected static Set<GlobalTablistHandlerBase> tablistHandlers = Collections.synchronizedSet(new TLinkedHashSet<GlobalTablistHandlerBase>());
+    protected static Set<GlobalTablistHandlerBase> tablistHandlers = Collections.synchronizedSet(new THashSet<GlobalTablistHandlerBase>());
 
     public GlobalTablistHandlerBase(ProxiedPlayer player, GlobalTablist plugin) {
         super(player);
         this.plugin = plugin;
+    }
+
+    public void failIfNotInEventLoop() {
+        ChannelWrapper ch;
+        try {
+            ch = ReflectionUtil.getChannelWrapper(getPlayer());
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            plugin.getLogger().log(Level.SEVERE, "failed to get ChannelWrapper for player", e);
+            return;
+        }
+        if (!ch.getHandle().eventLoop().inEventLoop()) {
+            throw new IllegalStateException("not in event loop");
+        }
+    }
+
+    public void executeInEventLoop(Runnable runnable) {
+        ChannelWrapper ch;
+        try {
+            ch = ReflectionUtil.getChannelWrapper(getPlayer());
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            plugin.getLogger().log(Level.SEVERE, "failed to get ChannelWrapper for player", e);
+            return;
+        }
+        if (ch.getHandle().eventLoop().inEventLoop()) {
+            runnable.run();
+        } else {
+            ch.getHandle().eventLoop().execute(runnable);
+        }
     }
 
     protected ProxiedPlayer getPlayer() {
@@ -56,11 +86,17 @@ public abstract class GlobalTablistHandlerBase extends TabList {
     }
 
     @Override
-    public void onPingChange(int i) {
+    public void onPingChange(final int i) {
+        failIfNotInEventLoop();
         if (plugin.getConfig().updatePing) {
             if (lastPing - i > 50 || lastPing - i < 50) {
-                for (GlobalTablistHandlerBase tablistHandler : tablistHandlers) {
-                    tablistHandler.onGlobalPlayerPingChange(getPlayer(), i);
+                for (final GlobalTablistHandlerBase tablistHandler : tablistHandlers) {
+                    tablistHandler.executeInEventLoop(new Runnable() {
+                        @Override
+                        public void run() {
+                            tablistHandler.onGlobalPlayerPingChange(getPlayer(), i);
+                        }
+                    });
                 }
                 lastPing = i;
             }
@@ -69,14 +105,25 @@ public abstract class GlobalTablistHandlerBase extends TabList {
 
     @Override
     public void onConnect() {
+        failIfNotInEventLoop();
         if (!connected) {
             connected = true;
             tablistHandlers.add(this);
             // send players
-            for (GlobalTablistHandlerBase tablistHandler : tablistHandlers) {
-                tablistHandler.onGlobalPlayerConnect(getPlayer());
+            for (final GlobalTablistHandlerBase tablistHandler : tablistHandlers) {
+                tablistHandler.executeInEventLoop(new Runnable() {
+                    @Override
+                    public void run() {
+                        tablistHandler.onGlobalPlayerConnect(getPlayer());
+                    }
+                });
                 if (tablistHandler != this) {
-                    onGlobalPlayerConnect(tablistHandler.getPlayer());
+                    executeInEventLoop(new Runnable() {
+                        @Override
+                        public void run() {
+                            onGlobalPlayerConnect(tablistHandler.getPlayer());
+                        }
+                    });
                 }
             }
 
@@ -87,13 +134,24 @@ public abstract class GlobalTablistHandlerBase extends TabList {
 
     @Override
     public void onDisconnect() {
+        failIfNotInEventLoop();
         if (connected) {
             connected = false;
             // remove player
-            for (GlobalTablistHandlerBase tablistHandler : tablistHandlers) {
-                tablistHandler.onGlobalPlayerDisconnect(getPlayer());
+            for (final GlobalTablistHandlerBase tablistHandler : tablistHandlers) {
+                tablistHandler.executeInEventLoop(new Runnable() {
+                    @Override
+                    public void run() {
+                        tablistHandler.onGlobalPlayerDisconnect(getPlayer());
+                    }
+                });
                 if (tablistHandler != this) {
-                    onGlobalPlayerDisconnect(tablistHandler.getPlayer());
+                    executeInEventLoop(new Runnable() {
+                        @Override
+                        public void run() {
+                            onGlobalPlayerDisconnect(tablistHandler.getPlayer());
+                        }
+                    });
                 }
             }
             tablistHandlers.remove(this);

@@ -20,15 +20,10 @@ package codecrafter47.globaltablist;
 
 import lombok.Getter;
 import net.cubespace.Yamler.Config.InvalidConfigurationException;
-import net.md_5.bungee.UserConnection;
-import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.ProxyServer;
-import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Plugin;
-import net.md_5.bungee.tab.TabList;
 
 import java.io.File;
-import java.lang.reflect.Field;
 import java.util.logging.Level;
 
 /**
@@ -52,20 +47,6 @@ public class GlobalTablist extends Plugin {
     private MainConfig config;
 
     private final TabListListener listener = new TabListListener(this);
-
-    static void setTablistHandler(ProxiedPlayer player, TabList tablistHandler) throws NoSuchFieldException, IllegalAccessException {
-        Class cplayer = UserConnection.class;
-        Field tabListHandler = cplayer.getDeclaredField("tabListHandler");
-        tabListHandler.setAccessible(true);
-        tabListHandler.set(player, tablistHandler);
-    }
-
-    static TabList getTablistHandler(ProxiedPlayer player) throws NoSuchFieldException, IllegalAccessException {
-        Class cplayer = UserConnection.class;
-        Field tabListHandler = cplayer.getDeclaredField("tabListHandler");
-        tabListHandler.setAccessible(true);
-        return (TabList) tabListHandler.get(player);
-    }
 
     /**
      * Called when the plugin is enabled
@@ -115,13 +96,5 @@ public class GlobalTablist extends Plugin {
     @Override
     public void onDisable() {
         // let the proxy do this
-    }
-
-    public void reportError(Throwable th) {
-        getLogger().log(Level.WARNING,
-                ChatColor.RED + "An internal error occured! Please send the "
-                        + "following stacktrace to the developer in order to help"
-                        + " resolving the problem",
-                th);
     }
 }
