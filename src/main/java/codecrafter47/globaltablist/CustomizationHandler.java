@@ -24,6 +24,7 @@ import lombok.Getter;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.chat.TextComponent;
+import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.event.PostLoginEvent;
 import net.md_5.bungee.api.event.ServerConnectedEvent;
@@ -53,7 +54,7 @@ public class CustomizationHandler implements Listener {
         customText.add(new Updateable() {
             @Override
             protected void update(ProxiedPlayer player) {
-                if(player.getPendingConnection().getVersion() < 47)return;
+                if (player.getPendingConnection().getVersion() < 47) return;
                 player.setTabHeader(TextComponent.fromLegacyText(ChatColor.
                                 translateAlternateColorCodes('&', replaceVariables(plugin.getConfig().header, player))),
                         TextComponent.fromLegacyText(ChatColor.
@@ -72,8 +73,8 @@ public class CustomizationHandler implements Listener {
             customText.add(new Updateable() {
                 @Override
                 protected void update(final ProxiedPlayer player) {
-                    if(player.getPendingConnection().getVersion() >= 47)return;
-                    if(player.getServer() == null){
+                    if (player.getPendingConnection().getVersion() >= 47) return;
+                    if (player.getServer() == null) {
                         plugin.getProxy().getScheduler().schedule(plugin, new Runnable() {
                             @Override
                             public void run() {
@@ -123,12 +124,12 @@ public class CustomizationHandler implements Listener {
     }
 
     private void sendCustomization(ProxiedPlayer player) {
-        for(Updateable updateable: customText){
+        for (Updateable updateable : customText) {
             updateable.update(player);
         }
     }
 
-    private String replaceVariables(final String text, final ProxiedPlayer player){
+    private String replaceVariables(final String text, final ProxiedPlayer player) {
         String s = text;
         for (Variable var : variables) {
             s = var.apply(s, player);
@@ -173,7 +174,7 @@ public class CustomizationHandler implements Listener {
             }
         });
 
-        variables.add( new ServerVariable("server", true));
+        variables.add(new ServerVariable("server", true));
 
         variables.add(new Variable("online", true) {
 
@@ -191,10 +192,10 @@ public class CustomizationHandler implements Listener {
                     @Override
                     public void run() {
                         int i = ProxyServer.getInstance().getOnlineCount();
-                        if(i != last){
+                        if (i != last) {
                             last = i;
-                            for(Updateable updateable: onChange){
-                                for (ProxiedPlayer player: plugin.getProxy().getPlayers()){
+                            for (Updateable updateable : onChange) {
+                                for (ProxiedPlayer player : plugin.getProxy().getPlayers()) {
                                     updateable.update(player);
                                 }
                             }
@@ -220,11 +221,15 @@ public class CustomizationHandler implements Listener {
                     plugin.getProxy().getScheduler().schedule(plugin, new Runnable() {
                         @Override
                         public void run() {
-                            int i = ProxyServer.getInstance().getServerInfo(serverName).getPlayers().size();
-                            if(i != last){
+                            int i = 0;
+                            ServerInfo serverInfo = ProxyServer.getInstance().getServerInfo(serverName);
+                            if (serverInfo != null) {
+                                i = serverInfo.getPlayers().size();
+                            }
+                            if (i != last) {
                                 last = i;
-                                for(Updateable updateable: onChange){
-                                    for (ProxiedPlayer player: plugin.getProxy().getPlayers()){
+                                for (Updateable updateable : onChange) {
+                                    for (ProxiedPlayer player : plugin.getProxy().getPlayers()) {
                                         updateable.update(player);
                                     }
                                 }
@@ -251,7 +256,7 @@ public class CustomizationHandler implements Listener {
             }
         });
 
-        if(plugin.getProxy().getPluginManager().getPlugin("RedisBungee") != null){
+        if (plugin.getProxy().getPluginManager().getPlugin("RedisBungee") != null) {
             variables.add(new Variable("redis_online", true) {
 
                 int last = 0;
@@ -268,12 +273,12 @@ public class CustomizationHandler implements Listener {
                         @Override
                         public void run() {
                             RedisBungeeAPI api = RedisBungee.getApi();
-                            if(api == null)return;
+                            if (api == null) return;
                             int i = api.getPlayerCount();
-                            if(i != last){
+                            if (i != last) {
                                 last = i;
-                                for(Updateable updateable: onChange){
-                                    for (ProxiedPlayer player: plugin.getProxy().getPlayers()){
+                                for (Updateable updateable : onChange) {
+                                    for (ProxiedPlayer player : plugin.getProxy().getPlayers()) {
                                         updateable.update(player);
                                     }
                                 }
@@ -300,13 +305,13 @@ public class CustomizationHandler implements Listener {
                             @Override
                             public void run() {
                                 RedisBungeeAPI api = RedisBungee.getApi();
-                                if(api == null)return;
+                                if (api == null) return;
                                 Set<UUID> playersOnServer = api.getPlayersOnServer(serverName);
                                 int i = playersOnServer != null ? playersOnServer.size() : 0;
-                                if(i != last){
+                                if (i != last) {
                                     last = i;
-                                    for(Updateable updateable: onChange){
-                                        for (ProxiedPlayer player: plugin.getProxy().getPlayers()){
+                                    for (Updateable updateable : onChange) {
+                                        for (ProxiedPlayer player : plugin.getProxy().getPlayers()) {
                                             updateable.update(player);
                                         }
                                     }
@@ -318,16 +323,16 @@ public class CustomizationHandler implements Listener {
             }
         }
 
-        for(Variable var: variables){
-            for(Updateable updateable: customText){
-                if(updateable.contains(var)){
+        for (Variable var : variables) {
+            for (Updateable updateable : customText) {
+                if (updateable.contains(var)) {
                     var.addUpdateable(updateable);
                 }
             }
         }
     }
 
-    public abstract class Variable{
+    public abstract class Variable {
         private String regex;
         private String name;
         protected List<Updateable> onChange = new ArrayList<>();
@@ -361,12 +366,12 @@ public class CustomizationHandler implements Listener {
             return onChange.add(updateable);
         }
 
-        protected void onCreate(){
+        protected void onCreate() {
 
         }
     }
 
-    public class ServerVariable extends Variable implements Listener{
+    public class ServerVariable extends Variable implements Listener {
 
 
         protected ServerVariable(String name) {
@@ -379,17 +384,17 @@ public class CustomizationHandler implements Listener {
 
         @Override
         String getReplacement(ProxiedPlayer player) {
-            if(player.getServer() == null)return "null";
+            if (player.getServer() == null) return "null";
             return player.getServer().getInfo().getName();
         }
 
         @EventHandler
-        public void onServerSwitch(ServerConnectedEvent event){
+        public void onServerSwitch(ServerConnectedEvent event) {
             final ProxiedPlayer player = event.getPlayer();
             ProxyServer.getInstance().getScheduler().schedule(plugin, new Runnable() {
                 @Override
                 public void run() {
-                    for(Updateable updateable: onChange){
+                    for (Updateable updateable : onChange) {
                         updateable.update(player);
                     }
                 }
@@ -402,8 +407,9 @@ public class CustomizationHandler implements Listener {
         }
     }
 
-    private static abstract class Updateable{
+    private static abstract class Updateable {
         protected abstract void update(ProxiedPlayer player);
+
         protected abstract boolean contains(Variable var);
     }
 }
