@@ -20,6 +20,7 @@ package codecrafter47.globaltablist;
 
 import gnu.trove.set.hash.THashSet;
 import net.md_5.bungee.UserConnection;
+import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.connection.Server;
 import net.md_5.bungee.netty.ChannelWrapper;
@@ -156,12 +157,14 @@ public abstract class GlobalTablistHandlerBase extends TabList {
             }
             tablistHandlers.remove(this);
 
-            // hack to revert changes from https://github.com/SpigotMC/BungeeCord/commit/830f18a35725f637d623594eaaad50b566376e59
-            Server server = getPlayer().getServer();
-            if (server != null) {
-                server.disconnect("Quitting");
+            if (getPlayer() != ProxyServer.getInstance().getPlayer(getPlayer().getName())) {
+                // hack to revert changes from https://github.com/SpigotMC/BungeeCord/commit/830f18a35725f637d623594eaaad50b566376e59
+                Server server = getPlayer().getServer();
+                if (server != null) {
+                    server.disconnect("Quitting");
+                }
+                ((UserConnection) getPlayer()).setServer(null);
             }
-            ((UserConnection) getPlayer()).setServer(null);
         }
     }
 
