@@ -4,12 +4,12 @@
 
     <groupId>codecrafter47.globaltablist</groupId>
     <artifactId>GlobalTablist</artifactId>
-    <version>1.8</version>
+    <version>1.9-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <scm>
         <developerConnection>scm:git:https://github.com/CodeCrafter47/GlobalTablist</developerConnection>
-        <tag>1.8</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <distributionManagement>
