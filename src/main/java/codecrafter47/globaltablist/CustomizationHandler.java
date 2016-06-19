@@ -306,8 +306,11 @@ public class CustomizationHandler implements Listener {
                             public void run() {
                                 RedisBungeeAPI api = RedisBungee.getApi();
                                 if (api == null) return;
-                                Set<UUID> playersOnServer = api.getPlayersOnServer(serverName);
-                                int i = playersOnServer != null ? playersOnServer.size() : 0;
+                                int i = 0;
+                                if (plugin.getProxy().getServers().containsKey(serverName)) {
+                                    Set<UUID> playersOnServer = api.getPlayersOnServer(serverName);
+                                    i = playersOnServer != null ? playersOnServer.size() : 0;
+                                }
                                 if (i != last) {
                                     last = i;
                                     for (Updateable updateable : onChange) {
