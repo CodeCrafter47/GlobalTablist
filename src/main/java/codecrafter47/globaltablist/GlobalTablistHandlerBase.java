@@ -18,7 +18,6 @@
  */
 package codecrafter47.globaltablist;
 
-import gnu.trove.set.hash.THashSet;
 import net.md_5.bungee.UserConnection;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
@@ -29,6 +28,7 @@ import net.md_5.bungee.tab.TabList;
 
 import java.util.Collections;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 
 public abstract class GlobalTablistHandlerBase extends TabList {
@@ -37,7 +37,7 @@ public abstract class GlobalTablistHandlerBase extends TabList {
     protected int lastPing = 0;
     protected boolean connected = false;
 
-    protected static Set<GlobalTablistHandlerBase> tablistHandlers = Collections.synchronizedSet(new THashSet<GlobalTablistHandlerBase>());
+    protected static Set<GlobalTablistHandlerBase> tablistHandlers = Collections.newSetFromMap(new ConcurrentHashMap<GlobalTablistHandlerBase, Boolean>());
 
     public GlobalTablistHandlerBase(ProxiedPlayer player, GlobalTablist plugin) {
         super(player);
