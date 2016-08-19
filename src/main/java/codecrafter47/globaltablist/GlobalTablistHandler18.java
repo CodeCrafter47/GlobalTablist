@@ -82,13 +82,18 @@ public class GlobalTablistHandler18 extends GlobalTablistHandlerBase {
                 List<PlayerListItem.Item> itemList = new ArrayList<>();
                 for (final PlayerListItem.Item item : playerListItem.getItems()) {
                     if (item.getUuid().equals(getPlayer().getUniqueId())) {
-                        displayNames.put(item.getUuid(), item.getDisplayName());
+                        final String displayName = item.getDisplayName();
+                        if (displayName != null) {
+                            displayNames.put(item.getUuid(), displayName);
+                        } else {
+                            displayNames.remove(item.getUuid());
+                        }
                         for (final GlobalTablistHandlerBase tablistHandler : tablistHandlers) {
                             if (tablistHandler instanceof GlobalTablistHandler18) {
                                 tablistHandler.executeInEventLoop(new Runnable() {
                                     @Override
                                     public void run() {
-                                        ((GlobalTablistHandler18) tablistHandler).onGlobalPlayerDisplayNameChange(getPlayer(), item.getDisplayName());
+                                        ((GlobalTablistHandler18) tablistHandler).onGlobalPlayerDisplayNameChange(getPlayer(), displayName);
                                     }
                                 });
                             }
