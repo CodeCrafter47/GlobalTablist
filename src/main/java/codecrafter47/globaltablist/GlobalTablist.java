@@ -38,6 +38,7 @@ public class GlobalTablist extends Plugin {
      */
     @Getter()
     private static GlobalTablist INSTANCE;
+    @Getter
     private CustomizationHandler customizationHandler;
 
     /**
@@ -65,7 +66,7 @@ public class GlobalTablist extends Plugin {
 
         INSTANCE = this;
         try {
-            if(!getDataFolder().exists())getDataFolder().mkdirs();
+            if (!getDataFolder().exists()) getDataFolder().mkdirs();
             config = new MainConfig();
             config.init(new File(getDataFolder(), "config.yml"));
             config.save();
@@ -76,7 +77,7 @@ public class GlobalTablist extends Plugin {
             return;
         }
 
-        if(config.showHeaderFooter)customizationHandler = new CustomizationHandler(this);
+        if (config.showHeaderFooter) customizationHandler = new CustomizationHandler(this);
 
         ProxyServer.getInstance().getPluginManager().registerListener(this,
                 listener);

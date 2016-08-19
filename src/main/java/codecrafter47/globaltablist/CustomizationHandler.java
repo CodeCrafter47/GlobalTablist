@@ -47,6 +47,7 @@ public class CustomizationHandler implements Listener {
     private List<Updateable> customText = new ArrayList<>();
 
     final static String[] fakePlayers = {"§m§4§7§k§o§l§0§r", "§m§4§7§k§o§l§1§r", "§m§4§7§k§o§l§2§r", "§m§4§7§k§o§l§3§r", "§m§4§7§k§o§l§4§r", "§m§4§7§k§o§l§5§r", "§m§4§7§k§o§l§6§r", "§m§4§7§k§o§l§7§r", "§m§4§7§k§o§l§8§r", "§m§4§7§k§o§l§9§r", "§m§4§7§k§o§l§a§r", "§m§4§7§k§o§l§b§r", "§m§4§7§k§o§l§c§r", "§m§4§7§k§o§l§d§r", "§m§4§7§k§o§l§e§r", "§m§4§7§k§o§l§f§r"};
+    public final PingVariable pingVariable = new PingVariable("ping", true);
 
     public CustomizationHandler(final GlobalTablist plugin) {
         this.plugin = plugin;
@@ -175,6 +176,8 @@ public class CustomizationHandler implements Listener {
         });
 
         variables.add(new ServerVariable("server", true));
+
+        variables.add(pingVariable);
 
         variables.add(new Variable("online", true) {
 
@@ -407,6 +410,29 @@ public class CustomizationHandler implements Listener {
         @Override
         protected void onCreate() {
             plugin.getProxy().getPluginManager().registerListener(plugin, this);
+        }
+    }
+
+    public class PingVariable extends Variable implements Listener {
+
+
+        protected PingVariable(String name) {
+            super(name);
+        }
+
+        protected PingVariable(String name, boolean isDynamic) {
+            super(name, isDynamic);
+        }
+
+        @Override
+        String getReplacement(ProxiedPlayer player) {
+            return "" + player.getPing();
+        }
+
+        public void onPingChange(ProxiedPlayer player) {
+            for (Updateable updateable : onChange) {
+                updateable.update(player);
+            }
         }
     }
 

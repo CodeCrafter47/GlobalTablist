@@ -89,6 +89,7 @@ public abstract class GlobalTablistHandlerBase extends TabList {
     @Override
     public void onPingChange(final int i) {
         failIfNotInEventLoop();
+        plugin.getCustomizationHandler().pingVariable.onPingChange(player);
         if (plugin.getConfig().updatePing) {
             if (lastPing - i > 50 || lastPing - i < 50) {
                 for (final GlobalTablistHandlerBase tablistHandler : tablistHandlers) {
