@@ -37,17 +37,19 @@ public class TabListListener implements Listener {
     @EventHandler
     public void onPlayerJoin(PostLoginEvent e) throws NoSuchFieldException,
             IllegalArgumentException, IllegalAccessException {
+        ProxiedPlayer player = e.getPlayer();
+        TabList tablistHandler;
         if (plugin.getConfig().useGlobalTablist) {
-            ProxiedPlayer player = e.getPlayer();
-            TabList tablistHandler;
             if(player.getPendingConnection().getVersion() < 47){
                 tablistHandler = new GlobalTablistHandler17(player, plugin);
             } else {
                 tablistHandler = new GlobalTablistHandler18(player, plugin);
             }
-            ReflectionUtil.setTablistHandler(player, tablistHandler);
-            tablistHandler.onConnect();
+        } else {
+            tablistHandler = new ServerUniqueTab(player, plugin);
         }
+        ReflectionUtil.setTablistHandler(player, tablistHandler);
+        tablistHandler.onConnect();
     }
 
     @EventHandler
