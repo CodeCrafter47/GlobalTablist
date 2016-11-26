@@ -34,6 +34,7 @@ public class MainConfig extends Config {
                 "",
                 "Variables you can use in header, footer and custom slots:",
                 " - {player} will be replaced with the name of the player",
+                " - {ping} ping of the player",
                 " - {newline} will insert a linebreak, only in header and footer",
                 " - {server} the server the player is playing on",
                 " - {online} total number of players online",
