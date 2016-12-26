@@ -1,0 +1,28 @@
+apply plugin: 'java'
+apply plugin: 'maven'
+
+group = 'codecrafter47.globaltablist'
+version = '1.11-SNAPSHOT'
+
+description = """"""
+
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+
+repositories {
+    maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
+    maven { url "http://basket.cindyscats.com/content/repositories/thirdparty/" }
+    maven { url "http://nexus.codecrafter47.dyndns.eu/content/repositories/public/" }
+    maven { url "http://repo.maven.apache.org/maven2" }
+}
+
+dependencies {
+    compileOnly group: 'com.imaginarycode.minecraft', name: 'RedisBungee', version: '0.3.5-SNAPSHOT'
+    compileOnly group: 'net.md-5', name: 'bungeecord-proxy', version: '1.8-SNAPSHOT'
+    compileOnly group: 'net.cubespace', name: 'yamler-bungee', version: '2.2.3'
+    compileOnly group: 'org.projectlombok', name: 'lombok', version: '1.14.8'
+}
+
+processResources {
+    expand(project.properties)
+}
