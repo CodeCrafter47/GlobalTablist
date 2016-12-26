@@ -10,17 +10,17 @@ sourceCompatibility = 1.7
 targetCompatibility = 1.7
 
 repositories {
+    mavenCentral()
     maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
-    maven { url "http://basket.cindyscats.com/content/repositories/thirdparty/" }
     maven { url "http://nexus.codecrafter47.dyndns.eu/content/repositories/public/" }
-    maven { url "http://repo.maven.apache.org/maven2" }
+    maven { url "http://repo.md-5.net/content/repositories/snapshots/" }
 }
 
 dependencies {
-    compileOnly group: 'com.imaginarycode.minecraft', name: 'RedisBungee', version: '0.3.5-SNAPSHOT'
-    compileOnly group: 'net.md-5', name: 'bungeecord-proxy', version: '1.8-SNAPSHOT'
-    compileOnly group: 'net.cubespace', name: 'yamler-bungee', version: '2.2.3'
-    compileOnly group: 'org.projectlombok', name: 'lombok', version: '1.14.8'
+    compileOnly group: 'com.imaginarycode.minecraft', name: 'RedisBungee', version: '0.3.8-SNAPSHOT'
+    compileOnly group: 'net.md-5', name: 'bungeecord-proxy', version: '1.11-SNAPSHOT'
+    compileOnly group: 'net.cubespace', name: 'Yamler-Bungee', version: '2.4.0-SNAPSHOT'
+    compileOnly group: 'org.projectlombok', name: 'lombok', version: '1.16.12'
 }
 
 processResources {
