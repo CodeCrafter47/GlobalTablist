@@ -112,6 +112,9 @@ public class GlobalTablistPlugin extends Plugin implements GlobalTablistAPI {
         } catch (Throwable th) {
             getLogger().log(Level.WARNING, "Failed to initialize Metrics", th);
         }
+
+        // Add reload command
+        getProxy().getPluginManager().registerCommand(this, new GlobalTablistCommand(this));
     }
 
     private void registerPlaceholders() {
@@ -148,5 +151,20 @@ public class GlobalTablistPlugin extends Plugin implements GlobalTablistAPI {
         if (customizationHandler != null) {
             customizationHandler.reload();
         }
+    }
+
+    public boolean reload() {
+        try {
+            config.load(new File(getDataFolder(), "config.yml"));
+        } catch (InvalidConfigurationException e) {
+            getLogger().log(Level.SEVERE, "Failed to load config", e);
+            return false;
+        }
+
+        if (customizationHandler != null) {
+            customizationHandler.reload();
+        }
+
+        return true;
     }
 }
