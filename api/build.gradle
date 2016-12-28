@@ -21,8 +21,12 @@ task sourceJar(type: Jar) {
 publishing {
     repositories {
         maven {
-            name "deployment"
-            url "http://nexus.codecrafter47.dyndns.eu/content/repositories/snapshots/"
+            name "codecrafter47-repo"
+            if (version.toString().endsWith("-SNAPSHOT")) {
+                url "http://nexus.codecrafter47.dyndns.eu/content/repositories/snapshots/"
+            } else {
+                url "http://nexus.codecrafter47.dyndns.eu/content/repositories/releases/"
+            }
         }
     }
 
