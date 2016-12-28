@@ -18,12 +18,21 @@
  */
 package codecrafter47.globaltablist;
 
+import codecrafter47.globaltablist.placeholders.*;
+import codecrafter47.globaltablist.placeholders.redis.RedisOnlineCountPlaceholder;
+import codecrafter47.globaltablist.placeholders.redis.RedisServerOnlineCountPlaceholder;
+import de.codecrafter47.globaltablist.GlobalTablist;
+import de.codecrafter47.globaltablist.GlobalTablistAPI;
+import de.codecrafter47.globaltablist.Placeholder;
 import lombok.Getter;
 import net.cubespace.Yamler.Config.InvalidConfigurationException;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.plugin.Plugin;
 
 import java.io.File;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.logging.Level;
 
 /**
@@ -31,15 +40,17 @@ import java.util.logging.Level;
  *
  * @author Florian Stober
  */
-public class GlobalTablist extends Plugin {
+public class GlobalTablistPlugin extends Plugin implements GlobalTablistAPI {
 
     /**
      * Holds an INSTANCE of itself if the plugin is enabled
      */
-    @Getter()
-    private static GlobalTablist INSTANCE;
     @Getter
+    private static GlobalTablistPlugin INSTANCE;
     private CustomizationHandler customizationHandler;
+
+    @Getter
+    private Set<Placeholder> placeholders = new CopyOnWriteArraySet<>();
 
     /**
      * provides access to the configuration
@@ -48,6 +59,8 @@ public class GlobalTablist extends Plugin {
     private MainConfig config;
 
     private final TabListListener listener = new TabListListener(this);
+    @Getter
+    private final PingPlaceholder pingPlaceholder = new PingPlaceholder();
 
     /**
      * Called when the plugin is enabled
@@ -64,7 +77,10 @@ public class GlobalTablist extends Plugin {
             return;
         }
 
+        // set instance
         INSTANCE = this;
+
+        // load config
         try {
             if (!getDataFolder().exists()) getDataFolder().mkdirs();
             config = new MainConfig();
@@ -77,10 +93,17 @@ public class GlobalTablist extends Plugin {
             return;
         }
 
+        // initialize API
+        GlobalTablist.setAPI(this);
+
+        // register built-in placeholders
+        registerPlaceholders();
+
+        // load customization handler
         if (config.showHeaderFooter) customizationHandler = new CustomizationHandler(this);
 
-        ProxyServer.getInstance().getPluginManager().registerListener(this,
-                listener);
+        // register listener
+        ProxyServer.getInstance().getPluginManager().registerListener(this, listener);
 
         // Start metrics
         try {
@@ -91,11 +114,39 @@ public class GlobalTablist extends Plugin {
         }
     }
 
+    private void registerPlaceholders() {
+        registerPlaceholder(this, new ListenerMaxPlayersPlaceholder());
+        registerPlaceholder(this, new NewLinePlaceholder());
+        registerPlaceholder(this, new OnlineCountPlaceholder(this));
+        registerPlaceholder(this, pingPlaceholder);
+        registerPlaceholder(this, new PlayerLimitPlaceholder());
+        registerPlaceholder(this, new PlayerNamePlaceholder());
+        for (String server : getProxy().getServers().keySet()) {
+            registerPlaceholder(this, new ServerOnlineCountPlaceholder(this, server));
+        }
+        registerPlaceholder(this, new ServerPlaceholder(this));
+
+        if (getProxy().getPluginManager().getPlugin("RedisBungee") != null) {
+            registerPlaceholder(this, new RedisOnlineCountPlaceholder(this));
+            for (String server : getProxy().getServers().keySet()) {
+                registerPlaceholder(this, new RedisServerOnlineCountPlaceholder(this, server));
+            }
+        }
+    }
+
     /**
      * called when the plugin is disabled
      */
     @Override
     public void onDisable() {
         // let the proxy do this
+    }
+
+    @Override
+    public void registerPlaceholder(Plugin plugin, Placeholder placeholder) {
+        placeholders.add(placeholder);
+        if (customizationHandler != null) {
+            customizationHandler.reload();
+        }
     }
 }

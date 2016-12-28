@@ -18,104 +18,59 @@
  */
 package codecrafter47.globaltablist;
 
-import com.imaginarycode.minecraft.redisbungee.RedisBungee;
-import com.imaginarycode.minecraft.redisbungee.RedisBungeeAPI;
-import lombok.Getter;
+import de.codecrafter47.globaltablist.Placeholder;
+import de.codecrafter47.globaltablist.PlaceholderUpdateListener;
 import net.md_5.bungee.api.ChatColor;
-import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.event.PostLoginEvent;
-import net.md_5.bungee.api.event.ServerConnectedEvent;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
 import net.md_5.bungee.protocol.packet.Team;
 import net.md_5.bungee.tab.TabList;
 
-import java.util.*;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
 
 /**
  * @author Florian Stober
  */
-
-
 public class CustomizationHandler implements Listener {
-    private final GlobalTablist plugin;
-    private Collection<Variable> variables = new ArrayList<>();
-    private List<Updateable> customText = new ArrayList<>();
+    private final GlobalTablistPlugin plugin;
+    private List<CustomizationElement> customText = new CopyOnWriteArrayList<>();
 
     final static String[] fakePlayers = {"§m§4§7§k§o§l§0§r", "§m§4§7§k§o§l§1§r", "§m§4§7§k§o§l§2§r", "§m§4§7§k§o§l§3§r", "§m§4§7§k§o§l§4§r", "§m§4§7§k§o§l§5§r", "§m§4§7§k§o§l§6§r", "§m§4§7§k§o§l§7§r", "§m§4§7§k§o§l§8§r", "§m§4§7§k§o§l§9§r", "§m§4§7§k§o§l§a§r", "§m§4§7§k§o§l§b§r", "§m§4§7§k§o§l§c§r", "§m§4§7§k§o§l§d§r", "§m§4§7§k§o§l§e§r", "§m§4§7§k§o§l§f§r"};
-    public final PingVariable pingVariable = new PingVariable("ping", true);
 
-    public CustomizationHandler(final GlobalTablist plugin) {
+    public CustomizationHandler(GlobalTablistPlugin plugin) {
         this.plugin = plugin;
 
-        customText.add(new Updateable() {
-            @Override
-            protected void update(ProxiedPlayer player) {
-                if (player.getPendingConnection().getVersion() < 47) return;
-                player.setTabHeader(TextComponent.fromLegacyText(ChatColor.
-                                translateAlternateColorCodes('&', replaceVariables(plugin.getConfig().header, player))),
-                        TextComponent.fromLegacyText(ChatColor.
-                                translateAlternateColorCodes('&', replaceVariables(plugin.getConfig().footer, player))));
-            }
-
-            @Override
-            protected boolean contains(Variable var) {
-                return var.contains(plugin.getConfig().header) || var.contains(plugin.getConfig().footer);
-            }
-        });
-
-        for (int i = 0; i < plugin.getConfig().custom_lines_top.size() && i < fakePlayers.length; i++) {
-            final String text2 = plugin.getConfig().custom_lines_top.get(i);
-            final int id = i;
-            customText.add(new Updateable() {
-                @Override
-                protected void update(final ProxiedPlayer player) {
-                    if (player.getPendingConnection().getVersion() >= 47) return;
-                    if (player.getServer() == null) {
-                        plugin.getProxy().getScheduler().schedule(plugin, new Runnable() {
-                            @Override
-                            public void run() {
-                                update(player);
-                            }
-                        }, 200, TimeUnit.MILLISECONDS);
-                        return;
-                    }
-                    TabList tablistHandler = null;
-                    try {
-                        tablistHandler = ReflectionUtil.getTablistHandler(player);
-                    } catch (NoSuchFieldException | IllegalAccessException e) {
-                        e.printStackTrace();
-                    }
-                    if (tablistHandler != null && tablistHandler instanceof GlobalTablistHandler17) {
-                        String text = replaceVariables(text2, player);
-                        text = ChatColor.translateAlternateColorCodes('&', text);
-                        String split[] = splitText(text);
-                        Team t = new Team();
-                        t.setName("GTAB#" + id);
-                        t.setMode(!((GlobalTablistHandler17) tablistHandler).createdCustomSlots.contains(id) ? (byte) 0 : (byte) 2);
-                        t.setPrefix(split[0]);
-                        t.setDisplayName("");
-                        t.setSuffix(split[1]);
-                        t.setPlayers(new String[]{fakePlayers[id]});
-                        player.unsafe().sendPacket(t);
-                        ((GlobalTablistHandler17) tablistHandler).createdCustomSlots.add(id);
-                    }
-                }
-
-                @Override
-                protected boolean contains(Variable var) {
-                    return var.contains(text2);
-                }
-            });
-        }
-
-        addVariables();
+        loadCustomizations();
 
         plugin.getProxy().getPluginManager().registerListener(plugin, this);
+    }
+
+    public void reload() {
+        for (CustomizationElement customizationElement : customText) {
+            customizationElement.unload();
+        }
+        customText.clear();
+        loadCustomizations();
+        for (ProxiedPlayer player : plugin.getProxy().getPlayers()) {
+            sendCustomization(player);
+        }
+    }
+
+    private void loadCustomizations() {
+        customText.add(new HeaderFooter(plugin.getConfig().header, plugin.getConfig().footer));
+
+        for (int i = 0; i < plugin.getConfig().custom_lines_top.size() && i < fakePlayers.length; i++) {
+            final String text = plugin.getConfig().custom_lines_top.get(i);
+            customText.add(new CustomSlot(i, text));
+        }
     }
 
     @EventHandler
@@ -125,20 +80,12 @@ public class CustomizationHandler implements Listener {
     }
 
     private void sendCustomization(ProxiedPlayer player) {
-        for (Updateable updateable : customText) {
-            updateable.update(player);
+        for (CustomizationElement customizationElement : customText) {
+            customizationElement.update(player);
         }
     }
 
-    private String replaceVariables(final String text, final ProxiedPlayer player) {
-        String s = text;
-        for (Variable var : variables) {
-            s = var.apply(s, player);
-        }
-        return s;
-    }
-
-    private String[] splitText(String s) {
+    private static String[] splitText(String s) {
         String ret[] = new String[2];
         int left = s.length();
         if (left <= 16) {
@@ -158,287 +105,111 @@ public class CustomizationHandler implements Listener {
         return ret;
     }
 
-    private void addVariables() {
-        variables.add(new Variable("newline") {
+    private static abstract class CustomizationElement implements PlaceholderUpdateListener {
+        protected Set<Placeholder> placeholders = new LinkedHashSet<>();
 
-            @Override
-            String getReplacement(ProxiedPlayer player) {
-                return "\n";
-            }
-        });
-
-        variables.add(new Variable("player") {
-
-            @Override
-            String getReplacement(ProxiedPlayer player) {
-                return player.getDisplayName();
-            }
-        });
-
-        variables.add(new ServerVariable("server", true));
-
-        variables.add(pingVariable);
-
-        variables.add(new Variable("online", true) {
-
-            int last = 0;
-
-            @Override
-            String getReplacement(ProxiedPlayer player) {
-                return Integer.toString(last);
-            }
-
-            @Override
-            protected void onCreate() {
-                super.onCreate();
-                plugin.getProxy().getScheduler().schedule(plugin, new Runnable() {
-                    @Override
-                    public void run() {
-                        int i = ProxyServer.getInstance().getOnlineCount();
-                        if (i != last) {
-                            last = i;
-                            for (Updateable updateable : onChange) {
-                                for (ProxiedPlayer player : plugin.getProxy().getPlayers()) {
-                                    updateable.update(player);
-                                }
-                            }
-                        }
-                    }
-                }, 1000, 1000, TimeUnit.MILLISECONDS);
-            }
-        });
-
-        for (final String serverName : plugin.getProxy().getServers().keySet()) {
-            variables.add(new Variable(String.format("online_%s", serverName), true) {
-
-                int last = 0;
-
-                @Override
-                String getReplacement(ProxiedPlayer player) {
-                    return Integer.toString(last);
-                }
-
-                @Override
-                protected void onCreate() {
-                    super.onCreate();
-                    plugin.getProxy().getScheduler().schedule(plugin, new Runnable() {
-                        @Override
-                        public void run() {
-                            int i = 0;
-                            ServerInfo serverInfo = ProxyServer.getInstance().getServerInfo(serverName);
-                            if (serverInfo != null) {
-                                i = serverInfo.getPlayers().size();
-                            }
-                            if (i != last) {
-                                last = i;
-                                for (Updateable updateable : onChange) {
-                                    for (ProxiedPlayer player : plugin.getProxy().getPlayers()) {
-                                        updateable.update(player);
-                                    }
-                                }
-                            }
-                        }
-                    }, 1000, 1000, TimeUnit.MILLISECONDS);
-                }
-            });
-        }
-
-        variables.add(new Variable("shown_max") {
-
-            @Override
-            String getReplacement(ProxiedPlayer player) {
-                return Integer.toString(ProxyServer.getInstance().getConfig().getListeners().iterator().next().getMaxPlayers());
-            }
-        });
-
-        variables.add(new Variable("max") {
-
-            @Override
-            String getReplacement(ProxiedPlayer player) {
-                return Integer.toString(ProxyServer.getInstance().getConfig().getPlayerLimit());
-            }
-        });
-
-        if (plugin.getProxy().getPluginManager().getPlugin("RedisBungee") != null) {
-            variables.add(new Variable("redis_online", true) {
-
-                int last = 0;
-
-                @Override
-                String getReplacement(ProxiedPlayer player) {
-                    return Integer.toString(last);
-                }
-
-                @Override
-                protected void onCreate() {
-                    super.onCreate();
-                    plugin.getProxy().getScheduler().schedule(plugin, new Runnable() {
-                        @Override
-                        public void run() {
-                            RedisBungeeAPI api = RedisBungee.getApi();
-                            if (api == null) return;
-                            int i = api.getPlayerCount();
-                            if (i != last) {
-                                last = i;
-                                for (Updateable updateable : onChange) {
-                                    for (ProxiedPlayer player : plugin.getProxy().getPlayers()) {
-                                        updateable.update(player);
-                                    }
-                                }
-                            }
-                        }
-                    }, 1000, 1000, TimeUnit.MILLISECONDS);
-                }
-            });
-
-            for (final String serverName : plugin.getProxy().getServers().keySet()) {
-                variables.add(new Variable(String.format("redis_online_%s", serverName), true) {
-
-                    int last = 0;
-
-                    @Override
-                    String getReplacement(ProxiedPlayer player) {
-                        return Integer.toString(last);
-                    }
-
-                    @Override
-                    protected void onCreate() {
-                        super.onCreate();
-                        plugin.getProxy().getScheduler().schedule(plugin, new Runnable() {
-                            @Override
-                            public void run() {
-                                RedisBungeeAPI api = RedisBungee.getApi();
-                                if (api == null) return;
-                                int i = 0;
-                                if (plugin.getProxy().getServers().containsKey(serverName)) {
-                                    Set<UUID> playersOnServer = api.getPlayersOnServer(serverName);
-                                    i = playersOnServer != null ? playersOnServer.size() : 0;
-                                }
-                                if (i != last) {
-                                    last = i;
-                                    for (Updateable updateable : onChange) {
-                                        for (ProxiedPlayer player : plugin.getProxy().getPlayers()) {
-                                            updateable.update(player);
-                                        }
-                                    }
-                                }
-                            }
-                        }, 1000, 1000, TimeUnit.MILLISECONDS);
-                    }
-                });
-            }
-        }
-
-        for (Variable var : variables) {
-            for (Updateable updateable : customText) {
-                if (updateable.contains(var)) {
-                    var.addUpdateable(updateable);
-                }
-            }
-        }
-    }
-
-    public abstract class Variable {
-        private String regex;
-        private String name;
-        protected List<Updateable> onChange = new ArrayList<>();
-
-        @Getter
-        private boolean dynamic;
-
-        protected Variable(String name) {
-            this.regex = String.format("\\{%s\\}", name);
-            this.name = name;
-            dynamic = false;
-            onCreate();
-        }
-
-        protected Variable(String name, boolean isDynamic) {
-            this(name);
-            dynamic = isDynamic;
-        }
-
-        protected String apply(String text, ProxiedPlayer player) {
-            return text.replaceAll(regex, getReplacement(player));
-        }
-
-        protected boolean contains(String text) {
-            return text.contains(String.format("{%s}", name));
-        }
-
-        abstract String getReplacement(ProxiedPlayer player);
-
-        protected boolean addUpdateable(Updateable updateable) {
-            return onChange.add(updateable);
-        }
-
-        protected void onCreate() {
-
-        }
-    }
-
-    public class ServerVariable extends Variable implements Listener {
-
-
-        protected ServerVariable(String name) {
-            super(name);
-        }
-
-        protected ServerVariable(String name, boolean isDynamic) {
-            super(name, isDynamic);
-        }
-
-        @Override
-        String getReplacement(ProxiedPlayer player) {
-            if (player.getServer() == null) return "null";
-            return player.getServer().getInfo().getName();
-        }
-
-        @EventHandler
-        public void onServerSwitch(ServerConnectedEvent event) {
-            final ProxiedPlayer player = event.getPlayer();
-            ProxyServer.getInstance().getScheduler().schedule(plugin, new Runnable() {
-                @Override
-                public void run() {
-                    for (Updateable updateable : onChange) {
-                        updateable.update(player);
-                    }
-                }
-            }, 1, TimeUnit.SECONDS);
-        }
-
-        @Override
-        protected void onCreate() {
-            plugin.getProxy().getPluginManager().registerListener(plugin, this);
-        }
-    }
-
-    public class PingVariable extends Variable implements Listener {
-
-
-        protected PingVariable(String name) {
-            super(name);
-        }
-
-        protected PingVariable(String name, boolean isDynamic) {
-            super(name, isDynamic);
-        }
-
-        @Override
-        String getReplacement(ProxiedPlayer player) {
-            return "" + player.getPing();
-        }
-
-        public void onPingChange(ProxiedPlayer player) {
-            for (Updateable updateable : onChange) {
-                updateable.update(player);
-            }
-        }
-    }
-
-    private static abstract class Updateable {
         protected abstract void update(ProxiedPlayer player);
 
-        protected abstract boolean contains(Variable var);
+        @Override
+        public void onUpdate(ProxiedPlayer player) {
+            update(player);
+        }
+
+        protected String replacePlaceholders(String text, final ProxiedPlayer player) {
+            for (Placeholder placeholder : placeholders) {
+                StringBuffer buffer = new StringBuffer();
+                Matcher matcher = placeholder.getPattern().matcher(text);
+                while (matcher.find()) {
+                    matcher.appendReplacement(buffer, placeholder.getReplacement(player, matcher));
+                }
+                matcher.appendTail(buffer);
+                text = buffer.toString();
+            }
+            return text;
+        }
+
+        public void unload() {
+            for (Placeholder placeholder : placeholders) {
+                placeholder.removeUpdateListener(this);
+            }
+        }
+    }
+
+    private final class HeaderFooter extends CustomizationElement {
+        private final String header;
+        private final String footer;
+
+        private HeaderFooter(String header, String footer) {
+            this.header = header;
+            this.footer = footer;
+
+            for (Placeholder placeholder : plugin.getPlaceholders()) {
+                if (placeholder.getPattern().matcher(header).find() || placeholder.getPattern().matcher(footer).find()) {
+                    placeholders.add(placeholder);
+                    placeholder.addUpdateListener(this);
+                }
+            }
+        }
+
+        @Override
+        protected void update(ProxiedPlayer player) {
+            if (player.getPendingConnection().getVersion() >= 47) {
+                player.setTabHeader(
+                        TextComponent.fromLegacyText(ChatColor.translateAlternateColorCodes('&', replacePlaceholders(header, player))),
+                        TextComponent.fromLegacyText(ChatColor.translateAlternateColorCodes('&', replacePlaceholders(footer, player))));
+            }
+        }
+    }
+
+    private final class CustomSlot extends CustomizationElement {
+        private final int id;
+        private final String text;
+
+        private CustomSlot(int id, String text) {
+            this.id = id;
+            this.text = text;
+
+            for (Placeholder placeholder : plugin.getPlaceholders()) {
+                if (placeholder.getPattern().matcher(text).find()) {
+                    placeholders.add(placeholder);
+                    placeholder.addUpdateListener(this);
+                }
+            }
+        }
+
+        @Override
+        protected void update(final ProxiedPlayer player) {
+            if (player.getPendingConnection().getVersion() < 47) {
+                if (player.getServer() == null) {
+                    plugin.getProxy().getScheduler().schedule(plugin, new Runnable() {
+                        @Override
+                        public void run() {
+                            update(player);
+                        }
+                    }, 200, TimeUnit.MILLISECONDS);
+                    return;
+                }
+                TabList tablistHandler = null;
+                try {
+                    tablistHandler = ReflectionUtil.getTablistHandler(player);
+                } catch (NoSuchFieldException | IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+                if (tablistHandler != null && tablistHandler instanceof GlobalTablistHandler17) {
+                    String text = replacePlaceholders(this.text, player);
+                    text = ChatColor.translateAlternateColorCodes('&', text);
+                    String split[] = splitText(text);
+                    Team t = new Team();
+                    t.setName("GTAB#" + id);
+                    t.setMode(!((GlobalTablistHandler17) tablistHandler).createdCustomSlots.contains(id) ? (byte) 0 : (byte) 2);
+                    t.setPrefix(split[0]);
+                    t.setDisplayName("");
+                    t.setSuffix(split[1]);
+                    t.setPlayers(new String[]{fakePlayers[id]});
+                    player.unsafe().sendPacket(t);
+                    ((GlobalTablistHandler17) tablistHandler).createdCustomSlots.add(id);
+                }
+            }
+        }
     }
 }

@@ -1,0 +1,38 @@
+buildscript {
+    dependencies {
+        classpath 'org.hibernate.build.gradle:gradle-maven-publish-auth:2.0.1'
+    }
+    repositories {
+        maven {
+            url "http://repository.jboss.org/nexus/content/groups/public/"
+        }
+        mavenLocal()
+        mavenCentral()
+    }
+}
+
+apply plugin: 'maven-publish'
+apply plugin: 'maven-publish-auth'
+
+task sourceJar(type: Jar) {
+    from sourceSets.main.allJava
+}
+
+publishing {
+    repositories {
+        maven {
+            name "deployment"
+            url "http://nexus.codecrafter47.dyndns.eu/content/repositories/snapshots/"
+        }
+    }
+
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+
+            artifact sourceJar {
+                classifier "sources"
+            }
+        }
+    }
+}

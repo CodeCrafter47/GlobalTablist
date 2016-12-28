@@ -28,9 +28,9 @@ import net.md_5.bungee.tab.TabList;
 
 public class TabListListener implements Listener {
 
-    private final GlobalTablist plugin;
+    private final GlobalTablistPlugin plugin;
 
-    public TabListListener(GlobalTablist plugin) {
+    public TabListListener(GlobalTablistPlugin plugin) {
         this.plugin = plugin;
     }
 

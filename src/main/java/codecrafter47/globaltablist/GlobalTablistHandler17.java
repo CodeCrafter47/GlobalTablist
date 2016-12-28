@@ -8,7 +8,7 @@ import net.md_5.bungee.protocol.packet.PlayerListItem;
 public class GlobalTablistHandler17 extends GlobalTablistHandlerBase {
     TIntSet createdCustomSlots = new TIntHashSet(0);
 
-    public GlobalTablistHandler17(ProxiedPlayer player, GlobalTablist plugin) {
+    public GlobalTablistHandler17(ProxiedPlayer player, GlobalTablistPlugin plugin) {
         super(player, plugin);
     }
 

@@ -39,7 +39,7 @@ public class GlobalTablistHandler18 extends GlobalTablistHandlerBase {
     private final UUIDSet globalUUIDs = new UUIDSet();
     private static final Map<UUID, String> displayNames = new ConcurrentHashMap<>();
 
-    public GlobalTablistHandler18(ProxiedPlayer player, GlobalTablist plugin) {
+    public GlobalTablistHandler18(ProxiedPlayer player, GlobalTablistPlugin plugin) {
         super(player, plugin);
     }
 

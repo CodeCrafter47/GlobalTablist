@@ -1,5 +1,5 @@
 name: GlobalTablist
-main : codecrafter47.globaltablist.GlobalTablist
+main : codecrafter47.globaltablist.GlobalTablistPlugin
 version: ${version}
 author: CodeCrafter47
 depends: ['Yamler']

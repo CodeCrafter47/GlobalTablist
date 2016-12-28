@@ -1,28 +1,42 @@
-apply plugin: 'java'
-apply plugin: 'maven'
+plugins {
+    id "com.github.johnrengelman.shadow" version "1.2.3"
+}
 
-group = 'codecrafter47.globaltablist'
-version = '1.11-SNAPSHOT'
+allprojects {
+    apply plugin: 'java'
+    apply plugin: 'maven'
 
-description = """"""
+    group = 'de.codecrafter47.globaltablist'
+    version = '1.11-SNAPSHOT'
 
-sourceCompatibility = 1.7
-targetCompatibility = 1.7
+    description = """"""
 
-repositories {
-    mavenCentral()
-    maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
-    maven { url "http://nexus.codecrafter47.dyndns.eu/content/repositories/public/" }
-    maven { url "http://repo.md-5.net/content/repositories/snapshots/" }
+    sourceCompatibility = 1.7
+    targetCompatibility = 1.7
+
+    repositories {
+        mavenCentral()
+        maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
+        maven { url "http://nexus.codecrafter47.dyndns.eu/content/repositories/public/" }
+        maven { url "http://repo.md-5.net/content/repositories/snapshots/" }
+    }
+
+    dependencies {
+        compileOnly group: 'net.md-5', name: 'bungeecord-proxy', version: '1.11-SNAPSHOT'
+        compileOnly group: 'org.projectlombok', name: 'lombok', version: '1.16.12'
+    }
 }
 
 dependencies {
     compileOnly group: 'com.imaginarycode.minecraft', name: 'RedisBungee', version: '0.3.8-SNAPSHOT'
-    compileOnly group: 'net.md-5', name: 'bungeecord-proxy', version: '1.11-SNAPSHOT'
     compileOnly group: 'net.cubespace', name: 'Yamler-Bungee', version: '2.4.0-SNAPSHOT'
-    compileOnly group: 'org.projectlombok', name: 'lombok', version: '1.16.12'
+    compile project(":api")
 }
 
 processResources {
     expand(project.properties)
+}
+
+shadowJar {
+    classifier = null
 }

@@ -32,14 +32,14 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 
 public abstract class GlobalTablistHandlerBase extends TabList {
-    protected final GlobalTablist plugin;
+    protected final GlobalTablistPlugin plugin;
 
     protected int lastPing = 0;
     protected boolean connected = false;
 
     protected static Set<GlobalTablistHandlerBase> tablistHandlers = Collections.newSetFromMap(new ConcurrentHashMap<GlobalTablistHandlerBase, Boolean>());
 
-    public GlobalTablistHandlerBase(ProxiedPlayer player, GlobalTablist plugin) {
+    public GlobalTablistHandlerBase(ProxiedPlayer player, GlobalTablistPlugin plugin) {
         super(player);
         this.plugin = plugin;
     }
@@ -90,7 +90,7 @@ public abstract class GlobalTablistHandlerBase extends TabList {
     public void onPingChange(final int i) {
         failIfNotInEventLoop();
         ((UserConnection)player).setPing(i);
-        plugin.getCustomizationHandler().pingVariable.onPingChange(player);
+        plugin.getPingPlaceholder().onPingChange(player);
         if (plugin.getConfig().updatePing) {
             if (lastPing - i > 50 || lastPing - i < 50) {
                 for (final GlobalTablistHandlerBase tablistHandler : tablistHandlers) {
