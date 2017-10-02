@@ -4,6 +4,7 @@ import de.codecrafter47.globaltablist.Placeholder;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.connection.Server;
 import net.md_5.bungee.api.event.ServerConnectedEvent;
+import net.md_5.bungee.api.event.ServerSwitchEvent;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.event.EventHandler;
@@ -41,7 +42,7 @@ public final class ServerPlaceholder extends Placeholder {
     public final class ServerSwitchListener implements Listener {
 
         @EventHandler
-        public void onServerSwitch(ServerConnectedEvent event) {
+        public void onServerSwitch(ServerSwitchEvent event) {
             // update the placeholder to the affected player
             update(event.getPlayer());
         }
