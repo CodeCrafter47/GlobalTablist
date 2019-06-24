@@ -7,7 +7,7 @@ allprojects {
     apply plugin: 'maven'
 
     group = 'de.codecrafter47.globaltablist'
-    version = '1.12'
+    version = '1.13-SNAPSHOT'
 
     description = """"""
 
